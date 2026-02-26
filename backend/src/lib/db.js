@@ -8,7 +8,12 @@ export const connectDB = async () => {
   // fall back to an in-memory MongoDB for local development.
   try {
     if (ENV.DB_URL) {
-      const conn = await mongoose.connect(ENV.DB_URL);
+      const conn = await mongoose.connect(ENV.DB_URL, {
+        // better defaults for connection pooling in production
+        maxPoolSize: 20,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      });
       console.log("✅ Connected to MongoDB:", conn.connection.host);
       return;
     }

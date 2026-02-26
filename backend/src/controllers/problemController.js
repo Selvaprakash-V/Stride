@@ -1,16 +1,50 @@
 import Problem from "../models/Problem.js";
 import SolvedProblem from "../models/SolvedProblem.js";
 
+// GET /problems?search=&difficulty=&tags=&page=&limit=
 export async function getProblems(req, res) {
   try {
-    const problems = await Problem.find().sort({ title: 1 }).select("-__v");
-    res.status(200).json({ problems });
+    const { search = "", difficulty, tags, page = 1, limit = 20 } = req.query;
+    const query = {};
+    if (search) {
+      query.$text = { $search: search };
+    }
+    if (difficulty) {
+      query.difficulty = difficulty;
+    }
+    if (tags) {
+      // tags can be comma-separated string or array
+      const tagsArr = Array.isArray(tags) ? tags : tags.split(",").map(t => t.trim()).filter(Boolean);
+      if (tagsArr.length > 0) {
+        query.tags = { $all: tagsArr };
+      }
+    }
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await Problem.countDocuments(query);
+    const problems = await Problem.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .select("-__v -hiddenTestCases");
+    res.status(200).json({ problems, total, page: parseInt(page), limit: parseInt(limit) });
   } catch (error) {
     console.error("Error in getProblems controller:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
 
+// GET /problems/:slug
+export async function getProblemBySlug(req, res) {
+  try {
+    const { slug } = req.params;
+    const problem = await Problem.findOne({ slug }).select("-__v -hiddenTestCases");
+    if (!problem) return res.status(404).json({ message: "Problem not found" });
+    res.status(200).json({ problem });
+  } catch (error) {
+    console.error("Error in getProblemBySlug controller:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
 export async function getProblemById(req, res) {
   try {
     const { id } = req.params; // slug

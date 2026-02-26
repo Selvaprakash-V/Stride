@@ -1,0 +1,13 @@
+{
+  "name": "stride",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "start:backend": "node backend/src/server.js",
+    "start:frontend": "cd frontend && npm run dev"
+  }
+}

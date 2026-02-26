@@ -9,3 +9,27 @@ Getting started:
 1. Install dependencies in `backend` and `frontend`.
 2. Start backend (see `backend/package.json` scripts).
 3. Start frontend with Vite.
+
+Docker:
+
+1. Build backend image:
+
+```
+docker build -t stride-backend -f backend/Dockerfile ./backend
+```
+
+2. Run backend container (configure `DB_URL` and other env vars):
+
+```
+docker run -p 4000:4000 --env DB_URL="your-mongo-url" stride-backend
+```
+
+Environment:
+
+Create a `.env` file in `backend/` with the following variables as needed:
+
+- `DB_URL`
+- `PORT`
+- `CLIENT_URL`
+- `CLERK_SECRET_KEY`
+

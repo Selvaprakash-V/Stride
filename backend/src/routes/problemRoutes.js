@@ -1,30 +1,32 @@
 import express from "express";
-import { protectRoute } from "../middleware/protectRoute.js";
 import {
-	createProblem,
-	getProblemById,
-	getProblems,
-	markProblemSolved,
-	getMySolvedProblems,
-	searchProblems,
+  getProblems,
+  getProblemById,
+  createProblem,
+  markProblemSolved,
+  getMySolvedProblems,
+  searchProblems,
 } from "../controllers/problemController.js";
+import { protectRoute } from "../middleware/protectRoute.js";
 
 const router = express.Router();
 
-// Public endpoint to fetch all coding problems
+// GET /api/problems?search=&difficulty=&tags=&page=&limit=
 router.get("/", getProblems);
 
-// Search problems by text
+// GET /api/problems/search?q=...  (must be before /:id)
 router.get("/search", searchProblems);
 
-// Host-only endpoint to create a new problem
-router.post("/", protectRoute, createProblem);
-
-// Solved problems endpoints (MUST come before /:id to avoid route conflicts)
-router.post("/solved", protectRoute, markProblemSolved);
+// GET /api/problems/my-solved  (must be before /:id)
 router.get("/my-solved", protectRoute, getMySolvedProblems);
 
-// Get single problem by id (MUST be last to avoid matching "solved" or "my-solved" as :id)
+// POST /api/problems/solved
+router.post("/solved", protectRoute, markProblemSolved);
+
+// POST /api/problems  (host-only, create a problem)
+router.post("/", protectRoute, createProblem);
+
+// GET /api/problems/:id  (get by custom id e.g. "two-sum")
 router.get("/:id", getProblemById);
 
 export default router;

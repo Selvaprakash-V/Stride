@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Navbar from "../components/Navbar";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
 import OutputPanel from "../components/OutputPanel";
-import React, { Suspense } from "react";
 const CodeEditorPanel = React.lazy(() => import("../components/CodeEditorPanel"));
 import { executeCode } from "../lib/piston";
 import { useProblems } from "../hooks/useProblems";

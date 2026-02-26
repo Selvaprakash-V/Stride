@@ -6,6 +6,8 @@ const LANGUAGE_VERSIONS = {
   javascript: { language: "javascript", version: "18.15.0" },
   python: { language: "python", version: "3.10.0" },
   java: { language: "java", version: "15.0.2" },
+  c: { language: "c", version: "10.2.0" },
+  cpp: { language: "cpp", version: "10.2.0" },
 };
 
 /**
@@ -78,7 +80,8 @@ function getFileExtension(language) {
     javascript: "js",
     python: "py",
     java: "java",
+    c: "c",
+    cpp: "cpp",
   };
-
   return extensions[language] || "txt";
 }

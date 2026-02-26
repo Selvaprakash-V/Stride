@@ -1,33 +1,24 @@
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
-
 import { ENV } from "./env.js";
 
 export const connectDB = async () => {
-  // Try using provided DB_URL first (local or remote). If that fails,
-  // fall back to an in-memory MongoDB for local development.
-  try {
-    if (ENV.DB_URL) {
-      const conn = await mongoose.connect(ENV.DB_URL, {
-        // better defaults for connection pooling in production
-        maxPoolSize: 20,
-        serverSelectionTimeoutMS: 5000,
-        socketTimeoutMS: 45000,
-      });
-      console.log("✅ Connected to MongoDB:", conn.connection.host);
-      return;
-    }
-  } catch (error) {
-    console.warn("⚠️ Failed to connect using ENV.DB_URL, will try in-memory DB:", error.message);
+  // Require a real MongoDB connection string (e.g. MongoDB Atlas).
+  // Do not fall back to an in-memory server in production or CI.
+  if (!ENV.DB_URL) {
+    console.error("❌ DB_URL is not set. Please configure a MongoDB connection string (MongoDB Atlas or local) in backend/.env as DB_URL.");
+    process.exit(1);
   }
 
   try {
-    const mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
-    const conn = await mongoose.connect(uri);
-    console.log("✅ Connected to in-memory MongoDB (fallback)", conn.connection.host);
+    const conn = await mongoose.connect(ENV.DB_URL, {
+      // sensible defaults for pooling and timeouts
+      maxPoolSize: 20,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    console.log("✅ Connected to MongoDB:", conn.connection.host);
   } catch (error) {
-    console.error("❌ Error starting in-memory MongoDB", error);
+    console.error("❌ Failed to connect to MongoDB using DB_URL:", error.message || error);
     process.exit(1);
   }
 };

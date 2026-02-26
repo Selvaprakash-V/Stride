@@ -38,8 +38,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes for fast lookup
-userSchema.index({ clerkId: 1 });
-userSchema.index({ email: 1 });
+// `unique: true` on fields already creates indexes; avoid duplicate index declarations
 
 // Convenience virtual
 userSchema.virtual("displayName").get(function () {

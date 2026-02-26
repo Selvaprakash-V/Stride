@@ -114,22 +114,35 @@ export async function createProblem(req, res) {
       expectedOutput,
     } = req.body;
 
+    // Basic validation and sanitization
     if (!id || !title || !difficulty || !category || !descriptionText) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const existing = await Problem.findOne({ id });
+    const clean = {
+      id: String(id).trim(),
+      title: String(title).trim(),
+      difficulty: String(difficulty).trim().toLowerCase(),
+      category: String(category).trim(),
+      descriptionText: String(descriptionText).trim(),
+    };
+
+    if (clean.id.length < 2 || clean.title.length < 3) {
+      return res.status(400).json({ message: "Invalid id or title" });
+    }
+
+    const existing = await Problem.findOne({ id: clean.id });
     if (existing) {
       return res.status(409).json({ message: "Problem with this id already exists" });
     }
 
     const problem = new Problem({
-      id,
-      title,
-      difficulty,
-      category,
+      id: clean.id,
+      title: clean.title,
+      difficulty: clean.difficulty,
+      category: clean.category,
       description: {
-        text: descriptionText,
+        text: clean.descriptionText,
         notes: notes || [],
       },
       examples: examples || [],

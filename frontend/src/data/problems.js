@@ -14,4 +14,14 @@ export const LANGUAGE_CONFIG = {
     icon: "/java.png",
     monacoLang: "java",
   },
+  c: {
+    name: "C",
+    icon: "/c.png",
+    monacoLang: "c",
+  },
+  cpp: {
+    name: "C++",
+    icon: "/cpp.png",
+    monacoLang: "cpp",
+  },
 };

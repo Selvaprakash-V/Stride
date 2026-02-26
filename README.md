@@ -156,5 +156,4 @@ This project integrates with several third-party services (Clerk, Stream, Innges
 License
 -------
 
-This repository does not contain a license file. Add a `LICENSE` file if you plan to publish this code.
-
+This repository does not contain a license file. 

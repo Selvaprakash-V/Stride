@@ -61,3 +61,14 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Graceful shutdown
+process.on("SIGINT", async () => {
+  console.log("SIGINT received: shutting down gracefully");
+  try {
+    await disconnectDB();
+  } catch (err) {
+    console.warn("Error during disconnect:", err);
+  }
+  process.exit(0);
+});

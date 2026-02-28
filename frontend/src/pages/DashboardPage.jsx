@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
 import { useState } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions";
+import { motion, AnimatePresence } from "framer-motion";
 
 import Navbar from "../components/Navbar";
 import WelcomeSection from "../components/WelcomeSection";
@@ -44,19 +45,20 @@ function DashboardPage() {
 
   const isUserInSession = (session) => {
     if (!user.id) return false;
-
     return session.host?.clerkId === user.id || session.participant?.clerkId === user.id;
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-base-300">
-        <Navbar />
+    <div className="min-h-screen mesh-bg relative flex flex-col overflow-x-hidden">
+      <div className="noise-overlay" />
+
+      <Navbar />
+
+      <main className="relative z-10 flex-1">
         <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
 
-        {/* Grid layout */}
-        <div className="container mx-auto px-6 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="max-w-7xl mx-auto px-6 pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <StatsCards
               activeSessionsCount={activeSessions.length}
               recentSessionsCount={recentSessions.length}
@@ -68,9 +70,18 @@ function DashboardPage() {
             />
           </div>
 
-          <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+          >
+            <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
+          </motion.div>
         </div>
-      </div>
+      </main>
+
+      {/* Decorative Blob */}
+      <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
 
       <CreateSessionModal
         isOpen={showCreateModal}
@@ -80,7 +91,7 @@ function DashboardPage() {
         onCreateRoom={handleCreateRoom}
         isCreating={createSessionMutation.isPending}
       />
-    </>
+    </div>
   );
 }
 

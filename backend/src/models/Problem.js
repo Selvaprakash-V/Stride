@@ -12,6 +12,7 @@ const problemSchema = new mongoose.Schema(
   {
     // Human-readable unique identifier / slug (e.g. "two-sum")
     id: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true },
     title: { type: String, required: true },
     difficulty: { type: String, enum: ["Easy", "Medium", "Hard"], required: true },
     category: { type: String, default: "" },
@@ -33,12 +34,14 @@ const problemSchema = new mongoose.Schema(
     visibleTestCases: [{ input: String, output: String }],
     hiddenTestCases: [{ input: String, output: String }],
     acceptanceRate: { type: Number, default: 0 },
+    solvedCount: { type: Number, default: 0 },
+    totalSubmissions: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
 // Text indexes for full-text search
-problemSchema.index({ title: "text", category: "text" });
+problemSchema.index({ title: "text", category: "text", tags: "text" });
 
 const Problem = mongoose.model("Problem", problemSchema);
 

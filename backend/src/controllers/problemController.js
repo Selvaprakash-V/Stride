@@ -9,14 +9,13 @@ export async function getProblems(req, res) {
     if (search) {
       query.$text = { $search: search };
     }
-    if (difficulty) {
+    if (difficulty && difficulty !== "All") {
       query.difficulty = difficulty;
     }
     if (tags) {
-      // tags can be comma-separated string or array
-      const tagsArr = Array.isArray(tags) ? tags : tags.split(",").map(t => t.trim()).filter(Boolean);
+      const tagsArr = Array.isArray(tags) ? tags : String(tags).split(",").map(t => t.trim()).filter(Boolean);
       if (tagsArr.length > 0) {
-        query.tags = { $all: tagsArr };
+        query.tags = { $in: tagsArr }; // Changed from $all to $in for better discovery
       }
     }
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -25,7 +24,7 @@ export async function getProblems(req, res) {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .select("-__v -hiddenTestCases");
+      .select("-__v -hiddenTestCases -starterCode -expectedOutput");
     res.status(200).json({ problems, total, page: parseInt(page), limit: parseInt(limit) });
   } catch (error) {
     console.error("Error in getProblems controller:", error);
@@ -45,10 +44,15 @@ export async function getProblemBySlug(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+// GET /problems/:id (id or slug)
 export async function getProblemById(req, res) {
   try {
-    const { id } = req.params; // slug
-    const problem = await Problem.findOne({ id }).select("-__v");
+    const { id } = req.params;
+    // Try finding by slug first, then by id
+    let problem = await Problem.findOne({ slug: id }).select("-__v -hiddenTestCases");
+    if (!problem) {
+      problem = await Problem.findOne({ id }).select("-__v -hiddenTestCases");
+    }
 
     if (!problem) return res.status(404).json({ message: "Problem not found" });
 

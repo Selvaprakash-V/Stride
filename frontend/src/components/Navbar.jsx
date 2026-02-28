@@ -1,95 +1,108 @@
+import { SignedIn, UserButton, useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router";
-import { BookOpenIcon, LayoutDashboardIcon, SparklesIcon, UserIcon } from "lucide-react";
-import { UserButton } from "@clerk/clerk-react";
+import {
+  LayoutDashboard,
+  Code2,
+  User,
+  Terminal,
+  ChevronDown,
+  Activity
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 function Navbar() {
+  const { user } = useUser();
   const location = useLocation();
 
-  console.log(location);
-
-  const isActive = (path) => location.pathname === path;
+  const navLinks = [
+    { name: "Problems", path: "/problems", icon: Code2 },
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { name: "Profile", path: "/profile", icon: User },
+  ];
 
   return (
-    <nav className="bg-base-100/80 backdrop-blur-md border-b border-primary/20 sticky top-0 z-50 shadow-lg">
-      <div className="max-w-7xl mx-auto p-4 flex items-center justify-between">
-        {/* LOGO */}
-        <Link
-          to="/"
-          className="group flex items-center gap-3 hover:scale-105 transition-transform duration-200"
-        >
-          <div className="size-10 rounded-xl bg-gradient-to-r from-primary via-secondary to-accent flex items-center justify-center shadow-lg ">
-            <SparklesIcon className="size-6 text-white" />
+    <nav className="sticky top-0 z-[100] w-full px-6 py-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="relative glass-card px-8 py-3 border-white/5 flex items-center justify-between shadow-glow h-16">
+          <div className="absolute inset-0 noise-overlay rounded-3xl" />
+
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3 relative z-10 group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/40 blur-md rounded-lg scale-75 group-hover:scale-110 transition-transform duration-500" />
+              <div className="relative size-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg border border-white/10 group-hover:rotate-12 transition-all duration-500">
+                <Terminal className="size-6 text-white" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-black text-white leading-none tracking-tighter">STRIDE</span>
+              <span className="text-[8px] font-bold text-primary tracking-[.4em] uppercase leading-relaxed">Neural Grid</span>
+            </div>
+          </Link>
+
+          {/* Nav Links */}
+          <div className="hidden md:flex items-center gap-4 relative z-10">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`
+                    group relative px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300
+                    ${isActive ? "text-white" : "text-white/40 hover:text-white/70"}
+                  `}
+                >
+                  <div className="flex items-center gap-2">
+                    <link.icon className={`size-4 transition-colors ${isActive ? "text-primary" : "group-hover:text-primary"}`} />
+                    <span>{link.name}</span>
+                  </div>
+
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active"
+                      className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl -z-10"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
-          <div className="flex flex-col">
-            <span className="font-black text-xl bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-mono tracking-wider">
-              Stride
-            </span>
-            <span className="text-xs text-base-content/60 font-medium -mt-1">Code Together</span>
-          </div>
-        </Link>
-
-        <div className="flex items-center gap-1">
-          {/* PROBLEMS PAGE LINK */}
-          <Link
-            to={"/problems"}
-            className={`px-4 py-2.5 rounded-lg transition-all duration-200 
-              ${
-                isActive("/problems")
-                  ? "bg-primary text-primary-content"
-                  : "hover:bg-base-200 text-base-content/70 hover:text-base-content"
-              }
-              
-              `}
-          >
-            <div className="flex items-center gap-x-2.5">
-              <BookOpenIcon className="size-4" />
-              <span className="font-medium hidden sm:inline">Problems</span>
+          {/* User Section */}
+          <div className="flex items-center gap-6 relative z-10">
+            <div className="hidden lg:flex items-center gap-4 px-4 py-1.5 bg-black/40 border border-white/5 rounded-full backdrop-blur-md">
+              <div className="flex items-center gap-2">
+                <Activity className="size-3 text-easy animate-pulse" />
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Network Secure</span>
+              </div>
             </div>
-          </Link>
 
-          {/* DASHBORD PAGE LINK */}
-          <Link
-            to={"/dashboard"}
-            className={`px-4 py-2.5 rounded-lg transition-all duration-200 
-              ${
-                isActive("/dashboard")
-                  ? "bg-primary text-primary-content"
-                  : "hover:bg-base-200 text-base-content/70 hover:text-base-content"
-              }
-              
-              `}
-          >
-            <div className="flex items-center gap-x-2.5">
-              <LayoutDashboardIcon className="size-4" />
-              <span className="font-medium hidden sm:inline">Dashbord</span>
-            </div>
-          </Link>
+            <div className="h-6 w-[1px] bg-white/10 hidden sm:block" />
 
-          {/* PROFILE PAGE LINK */}
-          <Link
-            to={"/profile"}
-            className={`px-4 py-2.5 rounded-lg transition-all duration-200 
-              ${
-                isActive("/profile")
-                  ? "bg-primary text-primary-content"
-                  : "hover:bg-base-200 text-base-content/70 hover:text-base-content"
-              }
-              
-              `}
-          >
-            <div className="flex items-center gap-x-2.5">
-              <UserIcon className="size-4" />
-              <span className="font-medium hidden sm:inline">Profile</span>
-            </div>
-          </Link>
-
-          <div className="ml-4 mt-2">
-            <UserButton />
+            <SignedIn>
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex flex-col items-end mr-2">
+                  <span className="text-xs font-black text-white leading-none">{user?.firstName}</span>
+                  <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">Lvl 12 Elite</span>
+                </div>
+                <div className="p-1 rounded-full border-2 border-primary/20 hover:border-primary/50 transition-colors shadow-lg shadow-primary/10">
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: "size-8",
+                        userButtonTrigger: "focus:shadow-none"
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </SignedIn>
           </div>
         </div>
       </div>
     </nav>
   );
 }
+
 export default Navbar;

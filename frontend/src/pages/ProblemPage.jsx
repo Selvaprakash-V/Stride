@@ -1,57 +1,49 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Navbar from "../components/Navbar";
-
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
 import OutputPanel from "../components/OutputPanel";
 const CodeEditorPanel = React.lazy(() => import("../components/CodeEditorPanel"));
+
 import { executeCode } from "../lib/piston";
 import { useProblems } from "../hooks/useProblems";
 import { problemApi } from "../api/problems";
+import { submissionApi } from "../api/submissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
+import { motion, AnimatePresence } from "framer-motion";
 
 function ProblemPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [currentProblemId, setCurrentProblemId] = useState("two-sum");
+  const [currentProblemId, setCurrentProblemId] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
   const [code, setCode] = useState("");
   const [output, setOutput] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { data, isLoading } = useProblems();
   const allProblems = data?.problems || [];
-  const currentProblem = allProblems.find((p) => p.id === currentProblemId);
+  const currentProblem = allProblems.find((p) => p.slug === id || p.id === id);
 
-  // Mutation to mark problem as solved
-  const markSolvedMutation = useMutation({
-    mutationFn: (payload) => problemApi.markProblemSolved(payload),
-    onSuccess: (data) => {
-      console.log("Problem marked as solved:", data);
-      queryClient.invalidateQueries({ queryKey: ["my-solved-problems"] });
-    },
-    onError: (error) => {
-      console.error("Error marking problem as solved:", error);
-    },
-  });
-
-  // update problem when URL param changes
+  // update problem when URL param changes or data loads
   useEffect(() => {
-    if (!id || isLoading) return;
+    if (!id || isLoading || !currentProblem) return;
 
-    const problemExists = allProblems.find((p) => p.id === id);
-    if (problemExists) {
-      setCurrentProblemId(id);
-      const starter = problemExists.starterCode?.[selectedLanguage] || "";
+    setCurrentProblemId(currentProblem.id);
+    const starter = currentProblem.starterCode?.[selectedLanguage] || "";
+    // Only reset code if it's empty or problem changed fundamentally
+    if (!code || currentProblemId !== currentProblem.id) {
       setCode(starter);
-      setOutput(null);
     }
-  }, [id, selectedLanguage, isLoading, allProblems]);
+    setOutput(null);
+  }, [id, selectedLanguage, isLoading, currentProblem]);
 
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
@@ -61,132 +53,146 @@ function ProblemPage() {
     setOutput(null);
   };
 
-  const handleProblemChange = (newProblemId) => navigate(`/problem/${newProblemId}`);
+  const handleProblemChange = (newProblemSlug) => navigate(`/problem/${newProblemSlug}`);
 
   const triggerConfetti = () => {
-    confetti({
-      particleCount: 80,
-      spread: 250,
-      origin: { x: 0.2, y: 0.6 },
-    });
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-    confetti({
-      particleCount: 80,
-      spread: 250,
-      origin: { x: 0.8, y: 0.6 },
-    });
-  };
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
 
-  const normalizeOutput = (output) => {
-    // normalize output for comparison (trim whitespace, handle different spacing)
-    return output
-      .trim()
-      .split("\n")
-      .map((line) =>
-        line
-          .trim()
-          // remove spaces after [ and before ]
-          .replace(/\[\s+/g, "[")
-          .replace(/\s+\]/g, "]")
-          // normalize spaces around commas to single space after comma
-          .replace(/\s*,\s*/g, ",")
-      )
-      .filter((line) => line.length > 0)
-      .join("\n");
-  };
+    const interval = setInterval(function () {
+      const timeLeft = animationEnd - Date.now();
 
-  const checkIfTestsPassed = (actualOutput, expectedOutput) => {
-    const normalizedActual = normalizeOutput(actualOutput);
-    const normalizedExpected = normalizeOutput(expectedOutput);
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
 
-    return normalizedActual == normalizedExpected;
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
   };
 
   const handleRunCode = async () => {
     setIsRunning(true);
     setOutput(null);
-
-    const result = await executeCode(selectedLanguage, code);
-    setOutput(result);
-    setIsRunning(false);
-
-    // check if code executed successfully and matches expected output
-
-    if (result.success && currentProblem?.expectedOutput) {
-      const expectedOutput = currentProblem.expectedOutput[selectedLanguage];
-      const testsPassed = checkIfTestsPassed(result.output, expectedOutput);
-
-      if (testsPassed) {
-        triggerConfetti();
-        toast.success("All tests passed! Great job!");
-        
-        // Mark problem as solved for the user's profile
-        markSolvedMutation.mutate({
-          problem: currentProblem.title,
-          problemId: currentProblem.id,
-          difficulty: currentProblem.difficulty || "easy",
-          sessionId: null, // No session - solved independently
-          code: code,
-          language: selectedLanguage,
-        });
+    try {
+      const result = await executeCode(selectedLanguage, code);
+      setOutput(result);
+      if (result.success) {
+        toast.success("Code executed successfully!");
       } else {
-        toast.error("Tests failed. Check your output!");
+        toast.error("Execution failed. Check console.");
       }
-    } else {
-      toast.error("Code execution failed!");
+    } catch (err) {
+      toast.error("Failed to run code");
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await submissionApi.submitSolution({
+        problemId: currentProblem._id,
+        language: selectedLanguage,
+        code: code,
+      });
+
+      setOutput(res.result);
+
+      if (res.result.status === "Accepted") {
+        triggerConfetti();
+        toast.success("Congratulations! All test cases passed.", {
+          icon: '🚀',
+          style: {
+            borderRadius: '12px',
+            background: '#00b8a3',
+            color: '#fff',
+            fontWeight: 'bold'
+          },
+        });
+        queryClient.invalidateQueries({ queryKey: ["my-solved-problems"] });
+      } else {
+        toast.error(`Submission failed: ${res.result.status}`, {
+          style: {
+            borderRadius: '12px',
+            background: '#ef4743',
+            color: '#fff',
+            fontWeight: 'bold'
+          },
+        });
+      }
+    } catch (err) {
+      toast.error("Failed to submit solution");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="h-screen bg-base-100 flex flex-col">
+    <div className="h-screen bg-[#0d1117] flex flex-col overflow-hidden">
       <Navbar />
 
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 relative">
         {isLoading || !currentProblem ? (
-          <div className="h-full flex items-center justify-center text-base-content/60">
-            Loading problem...
+          <div className="h-full flex flex-col items-center justify-center gap-4">
+            <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <p className="text-white/40 font-black uppercase tracking-widest text-xs">Loading Problem Architecture...</p>
           </div>
         ) : (
-        <PanelGroup direction="horizontal">
-          {/* left panel- problem desc */}
-          <Panel defaultSize={40} minSize={30}>
-            <ProblemDescription
-              problem={currentProblem}
-              currentProblemId={currentProblemId}
-              onProblemChange={handleProblemChange}
-              allProblems={allProblems}
-            />
-          </Panel>
+          <PanelGroup direction="horizontal" className="h-full px-4 pb-4 gap-2">
+            {/* left panel- problem desc */}
+            <Panel defaultSize={40} minSize={30} className="rounded-xl overflow-hidden border border-white/5">
+              <ProblemDescription
+                problem={currentProblem}
+                currentProblemId={currentProblem.id}
+                onProblemChange={handleProblemChange}
+                allProblems={allProblems}
+              />
+            </Panel>
 
-          <PanelResizeHandle className="w-2 bg-base-300 hover:bg-primary transition-colors cursor-col-resize" />
+            <PanelResizeHandle className="w-1.5 transition-all hover:bg-primary/40 active:bg-primary rounded-full mx-1" />
 
-          {/* right panel- code editor & output */}
-          <Panel defaultSize={60} minSize={30}>
-            <PanelGroup direction="vertical">
-              {/* Top panel - Code editor */}
-              <Panel defaultSize={70} minSize={30}>
-                <Suspense fallback={<div className="p-6">Loading editor...</div>}>
-                  <CodeEditorPanel
-                    selectedLanguage={selectedLanguage}
-                    code={code}
-                    isRunning={isRunning}
-                    onLanguageChange={handleLanguageChange}
-                    onCodeChange={setCode}
-                    onRunCode={handleRunCode}
-                  />
-                </Suspense>
-              </Panel>
+            {/* right panel- code editor & output */}
+            <Panel defaultSize={60} minSize={35} className="flex flex-col gap-2">
+              <PanelGroup direction="vertical">
+                {/* Top panel - Code editor */}
+                <Panel defaultSize={65} minSize={30} className="rounded-xl overflow-hidden border border-white/5 shadow-2xl">
+                  <Suspense fallback={
+                    <div className="h-full flex items-center justify-center bg-[#1e1e1e]">
+                      <div className="h-2 w-24 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary animate-[shimmer_1.5s_infinite]" />
+                      </div>
+                    </div>
+                  }>
+                    <CodeEditorPanel
+                      selectedLanguage={selectedLanguage}
+                      code={code}
+                      isRunning={isRunning}
+                      isSubmitting={isSubmitting}
+                      onLanguageChange={handleLanguageChange}
+                      onCodeChange={setCode}
+                      onRunCode={handleRunCode}
+                      onSubmit={handleSubmit}
+                    />
+                  </Suspense>
+                </Panel>
 
-              <PanelResizeHandle className="h-2 bg-base-300 hover:bg-primary transition-colors cursor-row-resize" />
+                <PanelResizeHandle className="h-1.5 transition-all hover:bg-primary/40 active:bg-primary rounded-full my-1" />
 
-              {/* Bottom panel - Output Panel*/}
-
-              <Panel defaultSize={30} minSize={30}>
-                <OutputPanel output={output} />
-              </Panel>
-            </PanelGroup>
-          </Panel>
-        </PanelGroup>
+                {/* Bottom panel - Output Panel*/}
+                <Panel defaultSize={35} minSize={20} className="rounded-xl overflow-hidden border border-white/5 bg-[#161b22] shadow-2xl">
+                  <OutputPanel output={output} isRunning={isRunning} isSubmitting={isSubmitting} />
+                </Panel>
+              </PanelGroup>
+            </Panel>
+          </PanelGroup>
         )}
       </div>
     </div>

@@ -273,3 +273,82 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Vibrant landing overrides (scoped with .vibrant-landing) */
+.vibrant-landing .card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 10px 40px rgba(2,6,23,0.55), 0 0 30px rgba(124,58,237,0.04) inset;
+}
+
+.vibrant-landing .card .size-16, .vibrant-landing .card .size-14 {
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08));
+  box-shadow: 0 6px 18px rgba(99,102,241,0.06);
+}
+
+.vibrant-landing .badge {
+  background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(236,72,153,0.08));
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #fff;
+}
+
+.vibrant-landing .btn-primary {
+  background: linear-gradient(90deg, var(--brand-2), var(--brand-3));
+  box-shadow: 0 8px 30px rgba(124,58,237,0.18), 0 1px 0 rgba(255,255,255,0.03) inset;
+}
+
+.vibrant-landing .btn-secondary {
+  background: linear-gradient(90deg, #fb7185, #f97316);
+  color: white;
+  box-shadow: 0 8px 30px rgba(249,115,22,0.12);
+}
+
+.vibrant-landing .btn-accent {
+  background: linear-gradient(90deg, #34d399, #06b6d4);
+  color: #042023;
+}
+
+.vibrant-landing .glass-card {
+  background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(59,130,246,0.04));
+  border: 1px solid rgba(124,58,237,0.08);
+  box-shadow: 0 12px 40px rgba(3,7,18,0.6), 0 0 40px rgba(124,58,237,0.04) inset;
+}
+
+.vibrant-landing .card-title, .vibrant-landing h2, .vibrant-landing h3 {
+  background: linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.vibrant-landing .stat-value {
+  color: #fff;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 24px rgba(99,102,241,0.06);
+}
+
+.vibrant-landing .card-hover:hover {
+  transform: translateY(-8px) rotate(-0.25deg) scale(1.01);
+  box-shadow: 0 24px 64px rgba(2,6,23,0.7), 0 0 24px rgba(124,58,237,0.07);
+}
+
+/* Testimonials colorful avatars */
+.vibrant-landing .avatar > div { background: linear-gradient(135deg, #7c3aed, #fb7185); color: white; box-shadow: 0 8px 30px rgba(124,58,237,0.12); }
+
+/* Pricing highlights */
+.vibrant-landing .pricing-card { background-image: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 1rem; padding: 1.25rem; }
+.vibrant-landing .pricing-card:nth-child(2) { transform: scale(1.03); border: 1px solid rgba(255,255,255,0.06); }
+
+/* FAQ details styling */
+.vibrant-landing .faq-item summary { cursor: pointer; font-weight: 600; }
+.vibrant-landing .faq-item { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+
+/* Integrations logos color pop */
+.vibrant-landing .integration-logo { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 12px; }
+
+/* subtle colored borders for sections */
+.vibrant-landing section { border-left: 4px solid transparent; padding-left: 1rem; }
+.vibrant-landing section:nth-of-type(odd) { border-left-color: rgba(124,58,237,0.12); }
+.vibrant-landing section:nth-of-type(even) { border-left-color: rgba(59,130,246,0.08); }
+
+@media (max-width: 768px) {
+  .vibrant-landing .card { padding: 1rem; }
+}

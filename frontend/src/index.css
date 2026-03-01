@@ -22,6 +22,15 @@
   --font-sans: "Inter", "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Brand gradient tokens for richer visuals */
+:root {
+  --brand-1: #60a5fa; /* sky */
+  --brand-2: #7c3aed; /* purple */
+  --brand-3: #fb7185; /* pink */
+  --brand-4: #f97316; /* orange */
+  --brand-5: #34d399; /* teal */
+}
+
 @layer base {
 
   button:not(:disabled),
@@ -100,6 +109,98 @@
     transform: translateY(0px);
   }
 }
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.98); opacity: 0; }
+  60% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.shimmer {
+  position: relative; overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 2;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 1.6s linear infinite;
+  pointer-events: none;
+}
+
+@utility pop-in {
+  animation: pop 420ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+@utility slide-up-in {
+  animation: slide-up 360ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+@utility fade-in {
+  animation: pop 280ms ease both;
+}
+
+.btn-3d {
+  position: relative; overflow: hidden;
+}
+.btn-3d::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  box-shadow: 0 8px 30px rgba(99,102,241,0.12); transform: translateY(6px);
+  transition: transform 250ms ease, opacity 200ms ease;
+}
+.btn-3d:active::before { transform: translateY(2px); }
+
+.card-hover {
+  transition: transform 300ms cubic-bezier(.2,.9,.2,1), box-shadow 300ms;
+}
+.card-hover:hover { transform: translateY(-6px) rotate(-0.25deg); box-shadow: 0 18px 45px rgba(2,6,23,0.6); }
+
+.list-stagger > * { opacity: 0; transform: translateY(8px) scale(.995); }
+.list-stagger.populated > * { animation: pop 420ms cubic-bezier(.2,.9,.2,1) both; }
+
+/* Colorful animated blobs used behind hero */
+@keyframes blob-move {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24px, -18px, 0) scale(1.12); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+.colorful-blob {
+  position: absolute; border-radius: 50%; filter: blur(40px) saturate(140%);
+  opacity: 0.85; mix-blend-mode: screen; transform-origin: center;
+  animation: blob-move 8s infinite ease-in-out;
+}
+
+.blob-a { width: 420px; height: 420px; left: -8%; top: -8%; background: radial-gradient(circle at 30% 30%, var(--brand-1) 0%, transparent 40%), radial-gradient(circle at 70% 70%, var(--brand-2) 0%, transparent 40%); }
+.blob-b { width: 360px; height: 360px; right: -6%; bottom: 10%; background: radial-gradient(circle at 20% 20%, var(--brand-3) 0%, transparent 40%), radial-gradient(circle at 80% 80%, var(--brand-4) 0%, transparent 40%); animation-duration: 10s; }
+
+/* Subtle moving particles overlay */
+@keyframes particle-float { 0% { transform: translateY(0); opacity: 0.08 } 50% { transform: translateY(-18px); opacity: 0.16 } 100% { transform: translateY(0); opacity: 0.08 } }
+.particles-overlay { position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 24px 24px; opacity: 0.06; mix-blend-mode: overlay; animation: particle-float 12s infinite ease-in-out; }
+
+/* Neon text treatment */
+.neon-text { color: white; text-shadow: 0 2px 12px rgba(124,58,237,0.35), 0 8px 40px rgba(99,102,241,0.08); }
+
+/* Glint effect for CTA */
+.glint-btn { position: relative; overflow: hidden; }
+.glint-btn::after { content: ""; position: absolute; left: -60%; top: 0; width: 60%; height: 100%; background: linear-gradient(120deg, rgba(255,255,255,0.08), rgba(255,255,255,0.22), rgba(255,255,255,0.08)); transform: skewX(-20deg); transition: transform 450ms ease; }
+.glint-btn:hover::after { transform: translateX(180%) skewX(-20deg); }
+
+/* Accent stripe for feature cards */
+.feature-accent { position: absolute; inset: auto auto 0 0; height: 6px; width: 100%; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+
+
 
 @utility animate-float {
   animation: float 6s ease-in-out infinite;

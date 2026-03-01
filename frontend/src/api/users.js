@@ -8,6 +8,10 @@ export const userApi = {
     const response = await axiosInstance.put("/users/me", payload);
     return response.data;
   },
+  createProfile: async (payload) => {
+    const response = await axiosInstance.post("/users/me/profile", payload);
+    return response.data;
+  },
   searchUsers: async (query) => {
     const response = await axiosInstance.get(`/users/search?query=${encodeURIComponent(query)}`);
     return response.data;

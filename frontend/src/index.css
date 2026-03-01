@@ -242,6 +242,15 @@
   .star, .shooting-star, .nebula, .colorful-blob, .particles-overlay, .btn-3d::before { animation: none !important; transition: none !important; }
 }
 
+/* Landing footer and integrations */
+.integrations { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; align-items: center; }
+.integration-logo { height: 56px; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 6px 22px rgba(2,6,23,0.35);} 
+.pricing-card { border-radius: 1rem; padding: 1.25rem; }
+.faq-item { border-radius: 0.75rem; padding: 1rem; }
+
+.site-footer { background: linear-gradient(180deg, rgba(7,10,28,0.6), rgba(3,6,20,0.9)); color: rgba(230,237,243,0.9); }
+
+
 
 
 @utility animate-float {

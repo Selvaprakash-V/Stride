@@ -197,6 +197,98 @@ function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* HOW IT WORKS */}
+      <section className="max-w-7xl mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold">How It Works</h2>
+          <p className="text-base text-base-content/70 max-w-2xl mx-auto mt-3">Create a session, invite a peer, and collaborate in real-time — video, code, and feedback all in one place. No setup required.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          <motion.div className="card bg-base-100 shadow-xl p-6 text-center pop-in" initial={{opacity:0, y:8}} whileInView={{opacity:1, y:0}} viewport={{once:true}}>
+            <div className="mx-auto mb-4 size-14 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <ZapIcon className="size-8 text-primary" />
+            </div>
+            <h3 className="font-bold">Instant Rooms</h3>
+            <p className="text-base-content/70 mt-2">Spin up a coding room in seconds and start pairing — no installs, browser-based editor and video.</p>
+          </motion.div>
+
+          <motion.div className="card bg-base-100 shadow-xl p-6 text-center pop-in" initial={{opacity:0, y:8}} whileInView={{opacity:1, y:0}} transition={{delay:0.08}} viewport={{once:true}}>
+            <div className="mx-auto mb-4 size-14 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <Code2Icon className="size-8 text-primary" />
+            </div>
+            <h3 className="font-bold">Collaborative Editor</h3>
+            <p className="text-base-content/70 mt-2">Live shared code cursor, language-aware editor and instant run/submit feedback via integrated runner.</p>
+          </motion.div>
+
+          <motion.div className="card bg-base-100 shadow-xl p-6 text-center pop-in" initial={{opacity:0, y:8}} whileInView={{opacity:1, y:0}} transition={{delay:0.16}} viewport={{once:true}}>
+            <div className="mx-auto mb-4 size-14 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <VideoIcon className="size-8 text-primary" />
+            </div>
+            <h3 className="font-bold">Live Video & Feedback</h3>
+            <p className="text-base-content/70 mt-2">Built-in HD video with recording, chat and session summaries so you can review and improve after each session.</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold">Loved by Developers</h2>
+          <p className="text-base text-base-content/70 max-w-2xl mx-auto mt-3">Short testimonials from early users and interviewers.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <motion.blockquote className="card bg-base-100 shadow-lg p-6" initial={{opacity:0, y:6}} whileInView={{opacity:1, y:0}} viewport={{once:true}}>
+            <p className="text-base-content/80">"Stride made our interviews faster and gave candidates a frictionless experience. The built-in editor is a joy to use."</p>
+            <footer className="mt-4 flex items-center gap-3">
+              <div className="avatar"><div className="w-12 rounded-full bg-primary text-primary-content flex items-center justify-center">JS</div></div>
+              <div>
+                <div className="font-bold">J. Smith</div>
+                <div className="text-sm text-base-content/60">Engineering Manager</div>
+              </div>
+            </footer>
+          </motion.blockquote>
+
+          <motion.blockquote className="card bg-base-100 shadow-lg p-6" initial={{opacity:0, y:6}} whileInView={{opacity:1, y:0}} transition={{delay:0.06}} viewport={{once:true}}>
+            <p className="text-base-content/80">"I practiced mock interviews with friends and improved dramatically — the feedback tools are fantastic."</p>
+            <footer className="mt-4 flex items-center gap-3">
+              <div className="avatar"><div className="w-12 rounded-full bg-secondary text-secondary-content flex items-center justify-center">AM</div></div>
+              <div>
+                <div className="font-bold">A. Morgan</div>
+                <div className="text-sm text-base-content/60">Software Engineer</div>
+              </div>
+            </footer>
+          </motion.blockquote>
+
+          <motion.blockquote className="card bg-base-100 shadow-lg p-6" initial={{opacity:0, y:6}} whileInView={{opacity:1, y:0}} transition={{delay:0.12}} viewport={{once:true}}>
+            <p className="text-base-content/80">"The platform is stable, fast, and the UX keeps the focus on solving problems together — 5 stars."</p>
+            <footer className="mt-4 flex items-center gap-3">
+              <div className="avatar"><div className="w-12 rounded-full bg-accent text-accent-content flex items-center justify-center">RK</div></div>
+              <div>
+                <div className="font-bold">R. Khan</div>
+                <div className="text-sm text-base-content/60">Interview Coach</div>
+              </div>
+            </footer>
+          </motion.blockquote>
+        </div>
+      </section>
+
+      {/* PUBLIC CTA */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="glass-card p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-2xl font-bold">Try Stride — no account required</h3>
+            <p className="text-base-content/70 mt-2">Open a demo room and explore the editor, video, and run features without signing up.</p>
+          </div>
+
+          <div className="flex gap-4">
+            <a href="/problems" className="btn btn-primary btn-lg glint-btn">Explore Problems</a>
+            <SignInButton mode="modal"><button className="btn btn-outline btn-lg">Sign In</button></SignInButton>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

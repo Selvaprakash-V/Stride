@@ -33,6 +33,22 @@ const userSchema = new mongoose.Schema(
       enum: ["host", "participant"],
       default: "participant",
     },
+    // Profile type collects the onboarding intent: student or company
+    profileType: {
+      type: String,
+      enum: ["student", "company", "unknown"],
+      default: "unknown",
+    },
+    // Whether user has completed the one-time onboarding profile
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    // Freeform profile data that stores either student or company details
+    profileData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   { timestamps: true } // createdAt, updatedAt
 );

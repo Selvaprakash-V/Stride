@@ -120,6 +120,47 @@ export async function updateMe(req, res) {
   }
 }
 
+export async function updateProfile(req, res) {
+  try {
+    const authUser = req.user; // attached by protectRoute
+    // Only allow creating profile once
+    if (authUser.profileCompleted) {
+      return res.status(400).json({ message: "Profile already completed" });
+    }
+
+    const { profileType, profileData } = req.body;
+    const allowedTypes = ["student", "company"];
+    if (!profileType || !allowedTypes.includes(profileType)) {
+      return res.status(400).json({ message: "Invalid or missing profileType" });
+    }
+
+    // Apply submitted profile data
+    authUser.profileType = profileType;
+    authUser.profileData = profileData || {};
+    authUser.profileCompleted = true;
+
+    // Optionally derive role for app behavior: companies are treated as hosts
+    if (profileType === "company") {
+      authUser.role = "host";
+    }
+
+    await authUser.save();
+
+    res.status(200).json({ user: {
+      id: authUser._id,
+      name: authUser.name,
+      email: authUser.email,
+      profileType: authUser.profileType,
+      profileData: authUser.profileData,
+      profileCompleted: authUser.profileCompleted,
+      role: authUser.role,
+    } });
+  } catch (error) {
+    console.error("Error in updateProfile controller:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 // Sync all users from Clerk to update their names and emails
 export async function syncAllUsersFromClerk(req, res) {
   try {

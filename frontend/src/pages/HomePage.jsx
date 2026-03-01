@@ -46,6 +46,21 @@ function HomePage() {
         <div className="absolute inset-0 pointer-events-none opacity-30"><div className="noise-overlay" /></div>
         <div className="grid lg:grid-cols-2 gap-12 items-center relative">
           {/* decorative blobs + particles behind content */}
+          <div className="sky" aria-hidden>
+            <div className="nebula" />
+            {/* static stars placed with inline styles for variety */}
+            <span className="star" style={{left:'8%', top:'12%', animationDelay:'0.2s'}} />
+            <span className="star small" style={{left:'18%', top:'30%', animationDelay:'0.6s'}} />
+            <span className="star dim" style={{left:'28%', top:'8%', animationDelay:'1.1s'}} />
+            <span className="star" style={{left:'42%', top:'20%', animationDelay:'0.8s'}} />
+            <span className="star small" style={{left:'60%', top:'6%', animationDelay:'1.6s'}} />
+            <span className="star" style={{left:'72%', top:'40%', animationDelay:'0.1s'}} />
+            <span className="star dim" style={{left:'85%', top:'18%', animationDelay:'1.9s'}} />
+            {/* shooting stars with staggered delays */}
+            <span className="shooting-star" style={{left:'-10%', top:'10%', animation:'shoot 3s linear 1s infinite'}} />
+            <span className="shooting-star" style={{left:'-30%', top:'20%', animation:'shoot 4.4s linear 4s infinite'}} />
+            <span className="shooting-star" style={{left:'-20%', top:'5%', animation:'shoot 3.6s linear 6s infinite'}} />
+          </div>
           <div className="colorful-blob blob-a" aria-hidden />
           <div className="colorful-blob blob-b" aria-hidden />
           <div className="particles-overlay" aria-hidden />

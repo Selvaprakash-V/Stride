@@ -7,6 +7,9 @@ import {
   UsersIcon,
   VideoIcon,
   ZapIcon,
+  Database,
+  Globe,
+  Shield,
 } from "lucide-react";
 import { SignInButton } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
@@ -289,6 +292,136 @@ function HomePage() {
           </div>
         </div>
       </section>
+      {/* Pricing */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-6 neon-text">Pricing that scales with you</h2>
+          <p className="text-center text-slate-300 max-w-2xl mx-auto mb-8">Flexible plans for individuals, teams, and enterprises — start free and grow.</p>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="pricing-card bg-gradient-to-br from-indigo-900 to-indigo-800/60 border border-indigo-700/40 shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-semibold">Starter</span>
+                <span className="text-2xl font-extrabold">Free</span>
+              </div>
+              <p className="text-sm text-slate-300 mb-4">Perfect for learning and individual practice — includes public sessions and problems.</p>
+              <ul className="space-y-2 text-slate-200 text-sm mb-4">
+                <li>Community sessions</li>
+                <li>Basic editor & terminal</li>
+              </ul>
+              <button className="btn btn-primary btn-3d glint-btn w-full">Get started — it's free</button>
+            </div>
+
+            <div className="pricing-card bg-gradient-to-br from-rose-900 to-rose-800/60 border border-rose-700/40 shadow-2xl transform scale-105">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-semibold">Pro</span>
+                <span className="text-2xl font-extrabold">$12/mo</span>
+              </div>
+              <p className="text-sm text-slate-300 mb-4">Everything for focused pair-programming and private sessions with advanced tooling.</p>
+              <ul className="space-y-2 text-slate-200 text-sm mb-4">
+                <li>Private sessions</li>
+                <li>Session recording & playback</li>
+                <li>Priority support</li>
+              </ul>
+              <button className="btn btn-secondary btn-3d glint-btn w-full">Upgrade to Pro</button>
+            </div>
+
+            <div className="pricing-card bg-gradient-to-br from-emerald-900 to-emerald-800/60 border border-emerald-700/40 shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-semibold">Enterprise</span>
+                <span className="text-2xl font-extrabold">Custom</span>
+              </div>
+              <p className="text-sm text-slate-300 mb-4">SAML, SSO, dedicated instances, and priority SLA for large teams.</p>
+              <ul className="space-y-2 text-slate-200 text-sm mb-4">
+                <li>Single sign-on</li>
+                <li>Audit logs</li>
+                <li>Dedicated support</li>
+              </ul>
+              <button className="btn btn-accent btn-3d glint-btn w-full">Contact Sales</button>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Integrations */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h3 className="text-2xl font-bold text-center mb-6">Integrations & tooling</h3>
+          <p className="text-center text-slate-300 mb-8">Connect Stride with the tools your team already uses.</p>
+
+          <div className="integrations">
+            <div className="integration-logo"><Database className="h-6 w-6 text-slate-100" /><span className="sr-only">Database</span></div>
+            <div className="integration-logo"><Globe className="h-6 w-6 text-slate-100" /><span className="sr-only">Cloud</span></div>
+            <div className="integration-logo"><Shield className="h-6 w-6 text-slate-100" /><span className="sr-only">Security</span></div>
+            <div className="integration-logo"><ZapIcon className="h-6 w-6 text-slate-100" /></div>
+            <div className="integration-logo"><Code2Icon className="h-6 w-6 text-slate-100" /></div>
+            <div className="integration-logo"><VideoIcon className="h-6 w-6 text-slate-100" /></div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h3 className="text-2xl md:text-3xl font-bold text-center mb-6 neon-text">Frequently asked questions</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <details className="faq-item bg-slate-900/40 border border-slate-700/30">
+              <summary className="font-semibold cursor-pointer p-2">Is Stride free to use?</summary>
+              <p className="mt-2 text-slate-300 p-2">Yes — the Starter plan is free. Pro unlocks private sessions and extra features.</p>
+            </details>
+
+            <details className="faq-item bg-slate-900/40 border border-slate-700/30">
+              <summary className="font-semibold cursor-pointer p-2">Can I record sessions?</summary>
+              <p className="mt-2 text-slate-300 p-2">Recording and playback are available on Pro and Enterprise plans.</p>
+            </details>
+
+            <details className="faq-item bg-slate-900/40 border border-slate-700/30">
+              <summary className="font-semibold cursor-pointer p-2">Do you provide SSO?</summary>
+              <p className="mt-2 text-slate-300 p-2">Yes — SAML/SSO and enterprise features are available for Enterprise customers.</p>
+            </details>
+
+            <details className="faq-item bg-slate-900/40 border border-slate-700/30">
+              <summary className="font-semibold cursor-pointer p-2">How secure is my code?</summary>
+              <p className="mt-2 text-slate-300 p-2">We use secure transports, encryption at rest, and regular audits for enterprise customers.</p>
+            </details>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="site-footer mt-12 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid gap-8 md:grid-cols-3 items-start">
+            <div>
+              <h4 className="text-xl font-bold">Stride</h4>
+              <p className="text-slate-300 mt-2">Collaborative coding, reimagined — run public demos, private interviews, and learning sessions.</p>
+            </div>
+
+            <div>
+              <h5 className="font-semibold mb-2">Company</h5>
+              <ul className="space-y-1 text-slate-300 text-sm">
+                <li>About</li>
+                <li>Careers</li>
+                <li>Blog</li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="font-semibold mb-2">Follow</h5>
+              <div className="flex gap-3">
+                <a className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gradient-to-br from-purple-600 to-pink-500 text-white">GH</a>
+                <a className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white">TW</a>
+                <a className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 text-white">LN</a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 border-t border-slate-700/30 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-slate-400">
+            <div>© {new Date().getFullYear()} Stride — All rights reserved.</div>
+            <div className="mt-3 md:mt-0">Terms · Privacy · Status</div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

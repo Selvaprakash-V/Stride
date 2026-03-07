@@ -375,3 +375,30 @@
 
 .plan-card { border-radius: 12px; }
 .plan-modal .glass-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); }
+
+
+/* ── Code-platform utilities ─────────────────────────────────────────────── */
+
+/* Subtle grid lines — gives code-editor / graph-paper feel */
+@utility code-grid-bg {
+  background-color: #030712;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Syntax highlight token classes (usable inline) */
+.token-kw  { color: #c792ea; }
+.token-fn  { color: #82aaff; }
+.token-str { color: #c3e88d; }
+.token-num { color: #f78c6c; }
+.token-cmt { color: #546e7a; font-style: italic; }
+.token-op  { color: rgba(255,255,255,0.45); }
+.token-var { color: rgba(255,255,255,0.82); }
+
+/* Difficulty badge variants */
+.diff-easy   { color: #00b8a3; background: rgba(0,184,163,0.12);  border: 1px solid rgba(0,184,163,0.25);  }
+.diff-medium { color: #ffc01e; background: rgba(255,192,30,0.12);  border: 1px solid rgba(255,192,30,0.25);  }
+.diff-hard   { color: #ef4743; background: rgba(239,71,67,0.12);   border: 1px solid rgba(239,71,67,0.25);   }
+

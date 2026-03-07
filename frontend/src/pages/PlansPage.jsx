@@ -149,10 +149,10 @@ export default function PlansPage() {
     subscription?.plan === id && subscription?.status === "active";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#061020] via-[#07122a] to-[#0b1630]">
+    <div className="min-h-screen code-grid-bg">
       {/* TOP NAV */}
-      <nav className="sticky top-0 z-50 bg-base-100/10 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="btn btn-ghost btn-sm gap-2">
+      <nav className="sticky top-0 z-50 bg-[#030712]/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center gap-4">
+        <button onClick={() => navigate(-1)} className="btn btn-ghost btn-sm gap-2 text-white/60 hover:text-white">
           <ArrowLeftIcon className="h-4 w-4" /> Back
         </button>
         <Link to="/" className="flex items-center gap-2">
@@ -161,10 +161,10 @@ export default function PlansPage() {
             Stride
           </span>
         </Link>
-        <span className="ml-auto text-slate-500 text-sm">
+        <span className="ml-auto text-slate-500 text-sm font-mono">
           {subscription?.plan
-            ? `Current: ${subscription.plan} (${subscription.status})`
-            : "No active plan"}
+            ? `plan: ${subscription.plan} · ${subscription.status}`
+            : "no active plan"}
         </span>
       </nav>
 
@@ -202,34 +202,46 @@ export default function PlansPage() {
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.5 }}
+                  whileHover={{ y: -6, transition: { duration: 0.25 } }}
                   className={`relative flex flex-col rounded-2xl bg-gradient-to-br ${plan.gradient} border ${
-                    current ? `ring-2 ${plan.ring} border-transparent` : "border-white/5"
-                  } p-6 shadow-2xl`}
+                    current
+                      ? `ring-2 ${plan.ring} border-transparent`
+                      : plan.popular
+                      ? "border-rose-500/30"
+                      : "border-white/6"
+                  } p-6 ${
+                    plan.popular
+                      ? "plan-popular-glow scale-[1.03]"
+                      : plan.id === "starter"
+                      ? "plan-starter-glow"
+                      : "plan-enterprise-glow"
+                  }`}
                 >
                   {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-xs font-bold text-white shadow-lg">
-                      Most Popular
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-xs font-bold text-white shadow-lg"
+                      style={{ background: 'linear-gradient(90deg,#fb7185,#f97316)', boxShadow: '0 4px 22px rgba(251,113,133,0.4)' }}>
+                      ✦ Most Popular
                     </div>
                   )}
 
                   {/* Plan header */}
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-3 mb-5">
                     <div
-                      className="size-10 rounded-xl flex items-center justify-center"
-                      style={{ background: `${plan.iconColor}22` }}
+                      className="size-11 rounded-xl flex items-center justify-center border border-white/10"
+                      style={{ background: `${plan.iconColor}18`, boxShadow: `0 0 20px ${plan.iconColor}22` }}
                     >
                       <Icon className="h-5 w-5" style={{ color: plan.iconColor }} />
                     </div>
                     <div>
-                      <div className="font-bold text-lg">{plan.name}</div>
-                      <div className="text-xs text-slate-400">{plan.tagline}</div>
+                      <div className="font-black text-lg tracking-tight">{plan.name}</div>
+                      <div className="text-[11px] text-slate-400 font-mono">{plan.tagline}</div>
                     </div>
                   </div>
 
                   {/* Price */}
-                  <div className="mb-5">
-                    <span className="text-4xl font-extrabold">{plan.price}</span>
-                    <span className="text-slate-400 text-xs ml-2">{plan.priceNote}</span>
+                  <div className="mb-6 pb-5 border-b border-white/8">
+                    <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
+                    <span className="text-slate-400 text-xs ml-2 font-mono">{plan.priceNote}</span>
                   </div>
 
                   {/* Features */}
@@ -251,13 +263,15 @@ export default function PlansPage() {
                   {/* Actions */}
                   <div className="flex flex-col gap-2">
                     <button
-                      className={`btn btn-3d w-full ${
-                        plan.id === "starter" ? "btn-outline" : plan.id === "pro" ? "btn-primary" : "btn-accent"
+                      className={`btn btn-3d glint-btn w-full font-bold ${
+                        plan.id === "starter" ? "btn-outline border-indigo-500/40 hover:border-indigo-400" : plan.id === "pro" ? "btn-primary" : "btn-accent"
                       }`}
                       disabled={processing || current}
                       onClick={() => handleSubscribe(plan)}
                     >
-                      {current ? "Current plan ✓" : plan.cta}
+                      {current ? (
+                        <span className="flex items-center gap-2"><CheckIcon className="h-4 w-4" /> Current plan</span>
+                      ) : plan.cta}
                     </button>
                     <button
                       className="btn btn-ghost btn-sm gap-1 text-slate-400 hover:text-white"
@@ -280,11 +294,11 @@ export default function PlansPage() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-2xl font-bold text-center mb-6 text-white">Full feature comparison</h2>
-          <div className="overflow-x-auto rounded-2xl border border-white/5 shadow-2xl">
-            <table className="w-full text-sm bg-base-100/20 backdrop-blur-sm">
+          <div className="overflow-x-auto rounded-2xl border border-white/6 code-grid-bg shadow-2xl">
+            <table className="w-full text-sm backdrop-blur-sm">
               <thead>
-                <tr className="border-b border-white/5 text-center">
-                  <th className="py-4 px-6 text-left text-slate-400 w-1/3">Feature</th>
+                <tr className="border-b border-white/6 text-center bg-[#0d1117]/60">
+                  <th className="py-4 px-6 text-left text-slate-400 w-1/3 font-mono text-xs uppercase tracking-wider">Feature</th>
                   {PLANS.map((p) => (
                     <th key={p.id} className="py-4 px-6">
                       <button

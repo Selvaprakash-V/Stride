@@ -52,7 +52,7 @@ export default function ProblemsPage() {
     }, []);
 
   return (
-    <div className="min-h-screen bg-[#0d1117] relative overflow-hidden text-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen code-grid-bg relative overflow-hidden text-white font-sans selection:bg-primary/30">
       {/* Background Blobs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
@@ -88,9 +88,9 @@ export default function ProblemsPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex gap-4"
           >
-            <StatCard icon={<Trophy className="text-yellow-500" />} label="Solved" value={`${stats.solvedCount}`} />
-            <StatCard icon={<Target className="text-primary" />} label="Accuracy" value={`${stats.accuracy}%`} />
-            <StatCard icon={<Zap className="text-easy" />} label="Streak" value={`${stats.streak} Days`} />
+            <StatCard icon={<Trophy className="text-yellow-500" />} label="Solved" value={`${stats.solvedCount}`} glowClass="stat-glow-blue" />
+            <StatCard icon={<Target className="text-primary" />} label="Accuracy" value={`${stats.accuracy}%`} glowClass="stat-glow-purple" />
+            <StatCard icon={<Zap className="text-easy" />} label="Streak" value={`${stats.streak}d`} glowClass="stat-glow-teal" />
           </motion.div>
         </div>
 
@@ -150,14 +150,14 @@ export default function ProblemsPage() {
   );
 }
 
-function StatCard({ icon, label, value }) {
+function StatCard({ icon, label, value, glowClass = "" }) {
   return (
-    <div className="px-5 py-4 rounded-2xl bg-white/5 border border-white/10 shadow-xl min-w-[120px]">
-      <div className="flex items-center gap-3 mb-1">
-        {icon}
-        <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">{label}</span>
+    <div className={`px-5 py-4 rounded-2xl bg-[#0d1117] border border-white/8 min-w-[130px] ${glowClass} transition-all duration-300 hover:-translate-y-1`}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="size-5">{icon}</div>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/35">{label}</span>
       </div>
-      <div className="text-xl font-black">{value}</div>
+      <div className="text-2xl font-black font-mono tracking-tight">{value}</div>
     </div>
   );
 }

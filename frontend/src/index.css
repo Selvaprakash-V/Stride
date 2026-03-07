@@ -372,3 +372,6 @@
   .image-grid { grid-template-columns: 1fr; }
   .image-frame img { height: 180px; }
 }
+
+.plan-card { border-radius: 12px; }
+.plan-modal .glass-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); }

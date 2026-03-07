@@ -311,7 +311,7 @@ function HomePage() {
                 <li>Community sessions</li>
                 <li>Basic editor & terminal</li>
               </ul>
-              <button className="btn btn-primary btn-3d glint-btn w-full">Get started — it's free</button>
+              <Link to="/plans" className="btn btn-primary btn-3d glint-btn w-full flex items-center justify-center">Get started — it's free</Link>
             </div>
 
             <div className="pricing-card bg-gradient-to-br from-rose-900 to-rose-800/60 border border-rose-700/40 shadow-2xl transform scale-105">
@@ -325,7 +325,7 @@ function HomePage() {
                 <li>Session recording & playback</li>
                 <li>Priority support</li>
               </ul>
-              <button className="btn btn-secondary btn-3d glint-btn w-full">Upgrade to Pro</button>
+              <Link to="/plans" className="btn btn-secondary btn-3d glint-btn w-full flex items-center justify-center">Upgrade to Pro</Link>
             </div>
 
             <div className="pricing-card bg-gradient-to-br from-emerald-900 to-emerald-800/60 border border-emerald-700/40 shadow-lg">
@@ -339,7 +339,7 @@ function HomePage() {
                 <li>Audit logs</li>
                 <li>Dedicated support</li>
               </ul>
-              <button className="btn btn-accent btn-3d glint-btn w-full">Contact Sales</button>
+              <Link to="/plans" className="btn btn-accent btn-3d glint-btn w-full flex items-center justify-center">Contact Sales</Link>
             </div>
           </div>
         </motion.div>
@@ -360,64 +360,51 @@ function HomePage() {
           </div>
 
           <div className="image-grid">
-            {/* Editor snapshot with icon badge and code overlay */}
+            {/* Editor snapshot — code/language overlay */}
             <div className="image-frame">
-              <div className="image-badge" style={{display:'flex', alignItems:'center', gap:8}}>
+              <div className="image-badge" style={{display:'flex',alignItems:'center',gap:8}}>
                 <Code2Icon className="h-4 w-4" />
                 <span>Editor</span>
               </div>
               <img src="/hero.png" alt="editor snapshot" />
-              <div style={{position:'absolute', right:12, bottom:12, left:12, display:'flex', justifyContent:'space-between', alignItems:'center', gap:8}}>
-                <div className="glass-card" style={{padding:'6px 10px', borderRadius:8, fontSize:12}}>Live Collaboration • 2 cursors</div>
-                <div className="glass-card" style={{padding:'6px 10px', borderRadius:8, fontSize:12}}>JS • Python</div>
+              <div style={{position:'absolute',right:12,bottom:12,left:12,display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+                <div className="glass-card" style={{padding:'6px 10px',borderRadius:8,fontSize:12}}>Live Collaboration • 2 cursors</div>
+                <div className="glass-card" style={{padding:'6px 10px',borderRadius:8,fontSize:12}}>JS • Python</div>
               </div>
             </div>
 
-            {/* Video snapshot with centered play CTA */}
-            <div className="image-frame" style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
+            {/* Video snapshot — centred play button */}
+            <div className="image-frame" style={{display:'flex',alignItems:'center',justifyContent:'center'}}>
               <img src="/hero.png" alt="video snapshot" />
-              <button aria-label="play demo" className="btn btn-circle btn-ghost" style={{position:'absolute', inset:'auto 0 0 0', margin:'auto', width:72, height:72, background:'linear-gradient(90deg,#7c3aed,#60a5fa)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 12px 40px rgba(96,165,250,0.12)'}}>
+              <button aria-label="play demo" style={{position:'absolute',width:72,height:72,borderRadius:'50%',background:'linear-gradient(90deg,#7c3aed,#60a5fa)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 12px 40px rgba(96,165,250,0.12)',border:'none',cursor:'pointer'}}>
                 <PlayIcon className="h-6 w-6 text-white" />
               </button>
-              <div style={{position:'absolute', left:12, top:12}} className="glass-card" >
+              <div style={{position:'absolute',left:12,top:12}} className="glass-card">
                 <Monitor className="h-4 w-4" />
               </div>
             </div>
 
-            {/* Playback snapshot with timeline and label */}
+            {/* Playback snapshot — timeline bar */}
             <div className="image-frame">
-              <div className="image-badge" style={{background:'linear-gradient(90deg,#f97316,#fb7185)', display:'flex', alignItems:'center', gap:8}}>
+              <div className="image-badge" style={{background:'linear-gradient(90deg,#f97316,#fb7185)',display:'flex',alignItems:'center',gap:8}}>
                 <PlayIcon className="h-4 w-4" />
                 <span>Playback</span>
               </div>
               <img src="/hero.png" alt="playback snapshot" />
-              <div style={{position:'absolute', left:0, right:0, bottom:0, padding:12, display:'flex', gap:8, alignItems:'center'}}>
-                <div style={{flex:1, height:8, borderRadius:8, background:'linear-gradient(90deg,#60a5fa,#7c3aed)'}} />
-                <div className="glass-card" style={{padding:'6px 10px', borderRadius:8, fontSize:12}}>2:13</div>
+              <div style={{position:'absolute',left:0,right:0,bottom:0,padding:12,display:'flex',gap:8,alignItems:'center'}}>
+                <div style={{flex:1,height:8,borderRadius:8,background:'linear-gradient(90deg,#60a5fa,#7c3aed)'}} />
+                <div className="glass-card" style={{padding:'6px 10px',borderRadius:8,fontSize:12}}>2:13</div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* COLORFUL FEATURE BADGES */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          <div className="flex flex-wrap gap-4 items-center justify-center">
-            <div className="badge color-chip">Multi-Language</div>
-            <div className="badge color-chip" style={{background:'linear-gradient(90deg,#fb7185,#f97316)'}}>Live Pairing</div>
-            <div className="badge color-chip" style={{background:'linear-gradient(90deg,#34d399,#06b6d4)'}}>Recording</div>
-            <div className="badge color-chip" style={{background:'linear-gradient(90deg,#60a5fa,#7c3aed)'}}>Integrated Runner</div>
           </div>
         </motion.div>
       </section>
 
       {/* Integrations */}
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-          <h3 className="text-2xl font-bold text-center mb-6">Integrations & tooling</h3>
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h3 className="text-2xl font-bold text-center mb-6">Integrations &amp; tooling</h3>
           <p className="text-center text-slate-300 mb-8">Connect Stride with the tools your team already uses.</p>
-
           <div className="integrations">
             <div className="integration-logo"><Database className="h-6 w-6 text-slate-100" /><span className="sr-only">Database</span></div>
             <div className="integration-logo"><Globe className="h-6 w-6 text-slate-100" /><span className="sr-only">Cloud</span></div>

@@ -93,21 +93,7 @@ function ProfilePage() {
                   </p>
                   <div className="mt-3 flex items-center gap-3">
                     <label className="text-sm font-medium">Role:</label>
-                    <select
-                      className="select select-sm select-bordered"
-                      value={roleDraft}
-                      onChange={(e) => setRoleDraft(e.target.value)}
-                    >
-                      <option value="participant">Participant</option>
-                      <option value="host">Host</option>
-                    </select>
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => updateRoleMutation.mutate(roleDraft)}
-                      disabled={updateRoleMutation.isPending || roleDraft === profile.role}
-                    >
-                      {updateRoleMutation.isPending ? "Saving..." : "Save"}
-                    </button>
+                    <span className="badge badge-md badge-outline">{profile.role === 'host' ? 'Host / Organizer' : 'Participant'}</span>
                   </div>
                 </div>
               </div>

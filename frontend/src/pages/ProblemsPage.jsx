@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import ProblemsTable from "../components/ProblemsTable";
 import ProblemFilters from "../components/ProblemFilters";
 import { problemApi } from "../api/problems";
+import { userApi } from "../api/users";
 import { Sparkles, Trophy, Target, Zap } from "lucide-react";
 
 export default function ProblemsPage() {
@@ -12,6 +13,7 @@ export default function ProblemsPage() {
   const [problems, setProblems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({ solvedCount: 0, accuracy: 0, streak: 0 });
   const limit = 15;
 
   useEffect(() => {
@@ -33,6 +35,21 @@ export default function ProblemsPage() {
     }, 300); // Debounce
     return () => clearTimeout(delay);
   }, [filters, page]);
+
+    useEffect(() => {
+      let mounted = true;
+      userApi
+        .getStats()
+        .then((res) => {
+          if (!mounted) return;
+          setStats(res.stats || { solvedCount: 0, accuracy: 0, streak: 0 });
+        })
+        .catch(() => {})
+        .finally(() => {});
+      return () => {
+        mounted = false;
+      };
+    }, []);
 
   return (
     <div className="min-h-screen bg-[#0d1117] relative overflow-hidden text-white font-sans selection:bg-primary/30">
@@ -71,9 +88,9 @@ export default function ProblemsPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex gap-4"
           >
-            <StatCard icon={<Trophy className="text-yellow-500" />} label="Solved" value="12/150" />
-            <StatCard icon={<Target className="text-primary" />} label="Accuracy" value="78%" />
-            <StatCard icon={<Zap className="text-easy" />} label="Streak" value="5 Days" />
+            <StatCard icon={<Trophy className="text-yellow-500" />} label="Solved" value={`${stats.solvedCount}`} />
+            <StatCard icon={<Target className="text-primary" />} label="Accuracy" value={`${stats.accuracy}%`} />
+            <StatCard icon={<Zap className="text-easy" />} label="Streak" value={`${stats.streak} Days`} />
           </motion.div>
         </div>
 

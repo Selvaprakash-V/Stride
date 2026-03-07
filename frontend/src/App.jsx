@@ -9,6 +9,7 @@ import ProblemPage from "./pages/ProblemPage";
 import ProblemsPage from "./pages/ProblemsPage";
 import SessionPage from "./pages/SessionPage";
 import ProfilePage from "./pages/ProfilePage";
+import PlansPage from "./pages/PlansPage";
 import { useUserProfile } from "./hooks/useUserProfile";
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/dashboard" element={isSignedIn ? <DashboardPage /> : <Navigate to={"/"} />} />
 
         <Route path="/profile" element={isSignedIn ? <ProfilePage /> : <Navigate to={"/"} />} />
+        <Route path="/plans" element={isSignedIn ? <PlansPage /> : <Navigate to={'/'} />} />
 
         <Route path="/problems" element={isSignedIn ? <ProblemsPage /> : <Navigate to={"/"} />} />
         <Route path="/problem/:id" element={isSignedIn ? <ProblemPage /> : <Navigate to={"/"} />} />

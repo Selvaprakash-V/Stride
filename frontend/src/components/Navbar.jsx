@@ -5,8 +5,8 @@ import {
   Code2,
   User,
   Terminal,
-  ChevronDown,
-  Activity
+  Activity,
+  CreditCard
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -17,6 +17,7 @@ function Navbar() {
   const navLinks = [
     { name: "Problems", path: "/problems", icon: Code2 },
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { name: "Plans", path: "/plans", icon: CreditCard },
     { name: "Profile", path: "/profile", icon: User },
   ];
 
@@ -36,7 +37,7 @@ function Navbar() {
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-black text-white leading-none tracking-tighter">STRIDE</span>
-              <span className="text-[8px] font-bold text-primary tracking-[.4em] uppercase leading-relaxed">Neural Grid</span>
+              <span className="text-[8px] font-bold text-primary tracking-[.4em] uppercase leading-relaxed">Code Platform</span>
             </div>
           </Link>
 
@@ -84,7 +85,7 @@ function Navbar() {
               <div className="flex items-center gap-3">
                 <div className="hidden sm:flex flex-col items-end mr-2">
                   <span className="text-xs font-black text-white leading-none">{user?.firstName}</span>
-                  <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">Lvl 12 Elite</span>
+                  <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">Developer</span>
                 </div>
                 <div className="p-1 rounded-full border-2 border-primary/20 hover:border-primary/50 transition-colors shadow-lg shadow-primary/10">
                   <UserButton

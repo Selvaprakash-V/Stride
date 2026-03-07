@@ -49,7 +49,7 @@ function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen mesh-bg relative flex flex-col overflow-x-hidden">
+    <div className="min-h-screen code-grid-bg relative flex flex-col overflow-x-hidden">
       <div className="noise-overlay" />
 
       <Navbar />

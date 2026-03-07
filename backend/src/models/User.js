@@ -49,6 +49,27 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
+    // Subscription information
+    subscriptionPlan: {
+      type: String,
+      enum: ["starter", "pro", "enterprise", null],
+      default: null,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ["active", "canceled", "trial", "none"],
+      default: "none",
+    },
+    subscriptionProviderId: {
+      type: String,
+      default: "",
+    },
+    subscriptionStartsAt: {
+      type: Date,
+    },
+    subscriptionEndsAt: {
+      type: Date,
+    },
   },
   { timestamps: true } // createdAt, updatedAt
 );

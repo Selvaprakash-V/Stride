@@ -83,6 +83,7 @@ export async function markProblemSolved(req, res) {
       if (code) existingSolved.code = code;
       if (language) existingSolved.language = language;
       existingSolved.solvedAt = new Date();
+      existingSolved.result = "passed"; // mark as solved
       await existingSolved.save();
       console.log("Problem already solved, record updated:", existingSolved._id);
       return res.status(200).json({ message: "Problem already solved, record updated", solvedProblem: existingSolved });
@@ -97,6 +98,7 @@ export async function markProblemSolved(req, res) {
       session: sessionId || null,
       code: code || "",
       language: language || "javascript",
+      result: "passed",
     });
 
     console.log("New solved problem created:", solvedProblem._id);

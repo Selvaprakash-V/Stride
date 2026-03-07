@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { ArrowRight, Sparkles, Zap, ChevronRight } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, ChevronRight, Code2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 function WelcomeSection({ onCreateSession }) {
@@ -60,31 +60,63 @@ function WelcomeSection({ onCreateSession }) {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-            className="hidden lg:block relative group"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+            className="hidden lg:block relative group w-[500px] flex-shrink-0"
           >
-            <div className="absolute inset-0 bg-primary/20 rounded-[3rem] blur-3xl group-hover:bg-primary/30 transition-colors duration-700" />
-            <div className="relative glass-card p-2 border-white/5 overflow-hidden animate-float">
-              <div className="absolute inset-0 noise-overlay" />
-              <div className="rounded-[1.3rem] overflow-hidden border border-white/5">
-                <img
-                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop"
-                  alt="code mockup"
-                  className="w-[450px] aspect-[16/10] object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl glass border-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-lg bg-easy/20 flex items-center justify-center">
-                      <Zap className="size-4 text-easy" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Ongoing Match</p>
-                      <p className="text-sm font-bold text-white">Binary Search Masterclass</p>
-                    </div>
+            <div className="absolute inset-0 bg-primary/10 rounded-[2rem] blur-3xl group-hover:bg-primary/18 transition-colors duration-700 -z-10" />
+
+            {/* Code Editor Window */}
+            <div className="editor-window animate-float">
+              {/* Title bar */}
+              <div className="editor-titlebar">
+                <div className="size-3 rounded-full bg-[#ff5f57]" />
+                <div className="size-3 rounded-full bg-[#febc2e]" />
+                <div className="size-3 rounded-full bg-[#28c840]" />
+                <div className="flex items-center gap-2 ml-3 px-3 py-1 bg-[#0d1117] rounded-md border border-white/5">
+                  <Code2 className="size-3 text-primary/60" />
+                  <span className="text-[11px] font-mono text-white/35">solution.py</span>
+                </div>
+                <div className="ml-auto text-[10px] font-mono text-white/20">Python 3.12</div>
+              </div>
+
+              {/* Code body */}
+              <div className="flex text-[12px] leading-[1.75]">
+                {/* Line numbers */}
+                <div className="editor-linenums">
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
+                    <div key={n}>{n}</div>
+                  ))}
+                </div>
+
+                {/* Code content */}
+                <div className="p-4 font-mono text-[12px] leading-[1.75] flex-1 bg-[#0d1117] overflow-hidden">
+                  <div><span className="token-kw">def</span>{' '}<span className="token-fn">two_sum</span><span className="token-op">(nums, target):</span></div>
+                  <div className="pl-5 token-cmt"># O(n) hash-map approach</div>
+                  <div className="pl-5"><span className="token-var">seen</span><span className="token-op"> = </span><span className="token-op">{}</span></div>
+                  <div className="pl-5"><span className="token-kw">for</span>{' '}<span className="token-var">i, n</span>{' '}<span className="token-kw">in</span>{' '}<span className="token-fn">enumerate</span><span className="token-op">(nums):</span></div>
+                  <div className="pl-10"><span className="token-var">diff</span><span className="token-op"> = </span><span className="token-var">target</span><span className="token-op"> - </span><span className="token-var">n</span></div>
+                  <div className="pl-10 rounded bg-primary/5 -mx-1 px-1"><span className="token-kw">if</span>{' '}<span className="token-var">diff</span>{' '}<span className="token-kw">in</span>{' '}<span className="token-var">seen</span><span className="token-op">:</span></div>
+                  <div className="pl-16"><span className="token-kw">return</span>{' '}<span className="token-op">[</span><span className="token-var">seen</span><span className="token-op">[diff],</span>{' '}<span className="token-var">i</span><span className="token-op">]</span></div>
+                  <div className="pl-10"><span className="token-var">seen</span><span className="token-op">[n] = </span><span className="token-num">i</span></div>
+                  <div className="pl-5"><span className="token-kw">return</span>{' '}<span className="token-op">[]</span></div>
+                  <div className="pl-0 h-[1.75em] flex items-center">
+                    <span className="inline-block w-[2px] h-[14px] bg-primary cursor-blink align-middle ml-0" />
                   </div>
+                </div>
+              </div>
+
+              {/* Result / status bar */}
+              <div className="flex items-center justify-between px-4 py-2 border-t border-white/5 bg-[#161b22]">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="size-3.5 text-easy" />
+                  <span className="text-[10px] font-mono text-easy tracking-wider">Accepted</span>
+                  <span className="text-[10px] font-mono text-white/20">· 32ms · 17.4 MB</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-mono text-white/20">Beats</span>
+                  <span className="text-[10px] font-mono font-bold text-primary">94.2%</span>
                 </div>
               </div>
             </div>

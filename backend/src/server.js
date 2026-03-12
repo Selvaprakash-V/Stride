@@ -15,6 +15,7 @@ import problemRoutes from "./routes/problemRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import { ensureProblemsSeeded } from "./lib/seedProblems.js";
+import { executeCode } from "./lib/piston.js";
 
 const app = express();
 
@@ -40,6 +41,14 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/submissions", submissionRoutes);
+
+// Code execution proxy — avoids exposing Piston directly to browser
+app.post("/api/execute", async (req, res) => {
+  const { language, code } = req.body;
+  if (!language || !code) return res.status(400).json({ message: "language and code are required" });
+  const result = await executeCode(language, code);
+  res.status(200).json(result);
+});
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "api is up and running" });

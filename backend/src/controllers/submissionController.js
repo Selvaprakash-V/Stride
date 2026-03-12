@@ -4,7 +4,8 @@ import UserProblemStats from "../models/UserProblemStats.js";
 import { executeCode } from "../lib/piston.js";
 
 /**
- * Normalizes output for comparison
+ * Normalizes output for comparison — trims whitespace and spaces around brackets/commas,
+ * and lowercases booleans so Python "True"/"False" matches JS/seed "true"/"false".
  */
 function normalizeOutput(output) {
   if (!output) return "";
@@ -17,14 +18,80 @@ function normalizeOutput(output) {
         .replace(/\[\s+/g, "[")
         .replace(/\s+\]/g, "]")
         .replace(/\s*,\s*/g, ",")
+        .replace(/\bTrue\b/g, "true")
+        .replace(/\bFalse\b/g, "false")
+        .replace(/\bNone\b/g, "null")
     )
     .filter((line) => line.length > 0)
     .join("\n");
 }
 
 /**
+ * Extract the entry-point function name from starter code.
+ * JS:  "function twoSum(...)" → "twoSum"
+ * Py:  "def twoSum(...):"     → "twoSum"
+ */
+function extractFunctionName(language, starterCode) {
+  if (!starterCode) return null;
+  if (language === "javascript") {
+    const m = starterCode.match(/^function\s+(\w+)/m);
+    return m?.[1] || null;
+  }
+  if (language === "python") {
+    const m = starterCode.match(/^def\s+(\w+)/m);
+    return m?.[1] || null;
+  }
+  return null;
+}
+
+/**
+ * Build runnable code that appends test-harness calls for JS / Python.
+ * For compiled languages (Java, C, C++) the starter main() already prints test[0] output.
+ * Returns { codeToRun, expectedOutput } — expectedOutput is multi-line, one result per line.
+ */
+function buildTestHarness(language, userCode, starterCode, testCases) {
+  const fnName = extractFunctionName(language, starterCode);
+  const expectedLines = testCases.map((tc) => normalizeOutput(tc.output));
+  const expected = expectedLines.join("\n");
+
+  if (language === "javascript" && fnName) {
+    const calls = testCases
+      .map(
+        (tc) =>
+          `try{const __r=${fnName}(${tc.input});` +
+          `console.log(Array.isArray(__r)?JSON.stringify(__r):` +
+          `typeof __r==='boolean'?String(__r):String(__r));}` +
+          `catch(__e){process.stderr.write(__e.message+\"\\n\");}`
+      )
+      .join("\n");
+    return { codeToRun: userCode + "\n" + calls, expected };
+  }
+
+  if (language === "python" && fnName) {
+    const calls = testCases
+      .map(
+        (tc) =>
+          `try:\n` +
+          `  __args=eval("["+${JSON.stringify(tc.input)}+"]")\n` +
+          `  __r=${fnName}(*__args)\n` +
+          `  import json as __j\n` +
+          `  print(str(__r).lower() if isinstance(__r,bool) else __j.dumps(__r) if isinstance(__r,(list,dict)) else __r)\n` +
+          `except Exception as __e:\n` +
+          `  import sys;print(str(__e),file=sys.stderr)`
+      )
+      .join("\n");
+    return { codeToRun: userCode + "\n" + calls, expected };
+  }
+
+  // Java / C / C++ — starter main() already tests visibleTestCases[0]
+  return {
+    codeToRun: userCode,
+    expected: normalizeOutput(testCases[0]?.output || ""),
+  };
+}
+
+/**
  * POST /api/submissions
- * Refined to actually run code and verify against test cases
  */
 export async function submitSolution(req, res) {
   try {
@@ -40,38 +107,35 @@ export async function submitSolution(req, res) {
       return res.status(404).json({ message: "Problem not found" });
     }
 
-    // Combine test cases for verification
-    const testCases = [...problem.visibleTestCases, ...problem.hiddenTestCases];
+    // All test cases (visible + hidden)
+    const testCases = [...(problem.visibleTestCases || []), ...(problem.hiddenTestCases || [])];
 
-    // In a real production system, we'd run each test case separately.
-    // For this Piston-based MVP, we'll run the code once and expect it to print/return all outputs
-    // OR we'll just run one representative test case (for brevity in this demo).
+    // For compiled languages only test against visible[0] (main() already handles it)
+    const isCompiled = ["java", "c", "cpp"].includes(language);
+    const casesToTest = isCompiled ? (problem.visibleTestCases?.slice(0, 1) || []) : testCases;
 
-    // Let's implement a simplified logic: 
-    // Run the code. If it passes, status="Accepted".
+    // Get starter code from the Mongoose Map
+    const starterCode =
+      typeof problem.starterCode?.get === "function"
+        ? problem.starterCode.get(language)
+        : problem.starterCode?.[language];
 
-    const result = await executeCode(language, code);
+    const { codeToRun, expected } = buildTestHarness(language, code, starterCode, casesToTest);
+
+    const result = await executeCode(language, codeToRun);
 
     let status = "Accepted";
-    let error = null;
+    let outputToShow = result.output;
 
     if (!result.success) {
-      status = "Runtime Error";
-      error = result.error;
-    } else {
-      // Basic verification logic (comparing against expected outputs if handled by the user's code)
-      // Since our seed data expects user to log output, we'll just check if it executed without error
-      // AND optionally compare against problem.expectedOutput[language] if available.
-
+      status = result.error?.includes("Time Limit") ? "Time Limit Exceeded" : "Runtime Error";
+    } else if (expected) {
       const normalizedActual = normalizeOutput(result.output);
-      const expected = problem.expectedOutput?.[language] || problem.visibleTestCases[0]?.output;
-
-      if (expected && normalizedActual !== normalizeOutput(expected)) {
+      if (normalizedActual !== expected) {
         status = "Wrong Answer";
       }
     }
 
-    // Create the submission record
     const submission = await Submission.create({
       userId,
       problemId,
@@ -83,39 +147,33 @@ export async function submitSolution(req, res) {
     });
 
     // Update User Stats
-    const stats = await UserProblemStats.findOneAndUpdate(
+    await UserProblemStats.findOneAndUpdate(
       { userId, problemId },
-      {
-        $inc: { attempts: 1 },
-        $set: { solved: status === "Accepted" }
-      },
+      { $inc: { attempts: 1 }, $set: { solved: status === "Accepted" } },
       { upsert: true, new: true }
     );
 
     // Update Problem Stats
-    await Problem.findByIdAndUpdate(problemId, {
-      $inc: {
-        totalSubmissions: 1,
-        solvedCount: status === "Accepted" ? 1 : 0
+    await Problem.findByIdAndUpdate(
+      problemId,
+      { $inc: { totalSubmissions: 1, solvedCount: status === "Accepted" ? 1 : 0 } },
+      { runValidators: false, new: true }
+    ).then(async (updated) => {
+      if (updated?.totalSubmissions > 0) {
+        const rate = (updated.solvedCount / updated.totalSubmissions) * 100;
+        await Problem.findByIdAndUpdate(problemId, { $set: { acceptanceRate: rate } }, { runValidators: false });
       }
     });
-
-    // Recalculate acceptance rate
-    const updatedProblem = await Problem.findById(problemId);
-    if (updatedProblem.totalSubmissions > 0) {
-      updatedProblem.acceptanceRate = (updatedProblem.solvedCount / updatedProblem.totalSubmissions) * 100;
-      await updatedProblem.save();
-    }
 
     res.status(201).json({
       submission,
       result: {
         status,
-        output: result.output,
+        output: outputToShow,
         error: result.error,
         runtime: result.runtime,
-        memory: result.memory
-      }
+        memory: result.memory,
+      },
     });
   } catch (error) {
     console.error("Error in submitSolution controller:", error);

@@ -12,5 +12,7 @@ export const ENV = {
   STREAM_API_KEY: process.env.STREAM_API_KEY,
   STREAM_API_SECRET: process.env.STREAM_API_SECRET,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+  PISTON_API_URL: process.env.PISTON_API_URL,
+  PISTON_KEY: process.env.PISTON_KEY,
   DEBUG: process.env.DEBUG === "true",
 };

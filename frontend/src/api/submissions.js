@@ -1,14 +1,12 @@
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+import axiosInstance from "../lib/axios";
 
 export const submissionApi = {
     submitSolution: async (payload) => {
-        const response = await axios.post(`${API_URL}/submissions`, payload);
+        const response = await axiosInstance.post("/submissions", payload);
         return response.data;
     },
     getSubmissionsByProblem: async (problemId) => {
-        const response = await axios.get(`${API_URL}/submissions/${problemId}`);
+        const response = await axiosInstance.get(`/submissions/${problemId}`);
         return response.data;
     },
 };

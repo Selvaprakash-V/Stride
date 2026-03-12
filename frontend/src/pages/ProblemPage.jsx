@@ -7,7 +7,7 @@ import OutputPanel from "../components/OutputPanel";
 const CodeEditorPanel = React.lazy(() => import("../components/CodeEditorPanel"));
 
 import { executeCode } from "../lib/piston";
-import { useProblems } from "../hooks/useProblems";
+import { useProblems, useProblemById } from "../hooks/useProblems";
 import { problemApi } from "../api/problems";
 import { submissionApi } from "../api/submissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,15 +29,23 @@ function ProblemPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data, isLoading } = useProblems();
+  const { data: problemDetail, isLoading: isLoadingDetail } = useProblemById(id);
   const allProblems = data?.problems || [];
-  const currentProblem = allProblems.find((p) => p.slug === id || p.id === id);
+  const currentProblem = problemDetail?.problem || allProblems.find((p) => p.slug === id || p.id === id);
+
+  const getStarterCode = (problem, lang) => {
+    if (!problem?.starterCode) return "";
+    // After JSON serialization, Mongoose Maps become plain objects
+    if (typeof problem.starterCode.get === "function") return problem.starterCode.get(lang) || "";
+    return problem.starterCode[lang] || "";
+  };
 
   // update problem when URL param changes or data loads
   useEffect(() => {
     if (!id || isLoading || !currentProblem) return;
 
     setCurrentProblemId(currentProblem.id);
-    const starter = currentProblem.starterCode?.[selectedLanguage] || "";
+    const starter = getStarterCode(currentProblem, selectedLanguage);
     // Only reset code if it's empty or problem changed fundamentally
     if (!code || currentProblemId !== currentProblem.id) {
       setCode(starter);
@@ -48,7 +56,7 @@ function ProblemPage() {
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
     setSelectedLanguage(newLang);
-    const starter = currentProblem?.starterCode?.[newLang] || "";
+    const starter = getStarterCode(currentProblem, newLang);
     setCode(starter);
     setOutput(null);
   };
@@ -140,7 +148,7 @@ function ProblemPage() {
       <Navbar />
 
       <div className="flex-1 min-h-0 relative">
-        {isLoading || !currentProblem ? (
+        {isLoading || isLoadingDetail || !currentProblem ? (
           <div className="h-full flex flex-col items-center justify-center gap-4">
             <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
             <p className="text-white/40 font-black uppercase tracking-widest text-xs">Loading Problem Architecture...</p>

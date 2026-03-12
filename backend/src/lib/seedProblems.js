@@ -34,6 +34,7 @@ export async function ensureProblemsSeeded() {
     for (const p of PROBLEMS) {
       const doc = {
         id: String(p.id || p.slug || p.title).trim(),
+        slug: String(p.slug || p.id || p.title).trim(),
         title: p.title || p.id || "Untitled",
         difficulty: (p.difficulty || "Easy").toString(),
         category: p.category || "",

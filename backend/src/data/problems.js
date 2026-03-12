@@ -18,6 +18,9 @@ export const PROBLEMS = [
     starterCode: {
       javascript: "function twoSum(nums, target) {\n  // Write your solution here\n}",
       python: "def twoSum(nums, target):\n    # Write your solution here\n    pass",
+      java: "import java.util.*;\n\npublic class Main {\n    public static int[] twoSum(int[] nums, int target) {\n        // Write your solution here\n        return new int[]{0, 1};\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 7, 11, 15};\n        int target = 9;\n        int[] result = twoSum(nums, target);\n        System.out.println(Arrays.toString(result));\n    }\n}",
+      c: "#include <stdio.h>\n#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    // Write your solution here\n    *returnSize = 2;\n    int* result = (int*)malloc(2 * sizeof(int));\n    result[0] = 0; result[1] = 1;\n    return result;\n}\n\nint main() {\n    int nums[] = {2, 7, 11, 15};\n    int target = 9;\n    int returnSize;\n    int* result = twoSum(nums, 4, target, &returnSize);\n    printf(\"[%d,%d]\\n\", result[0], result[1]);\n    free(result);\n    return 0;\n}",
+      cpp: "#include <iostream>\n#include <vector>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Write your solution here\n        return {0, 1};\n    }\n};\n\nint main() {\n    Solution sol;\n    vector<int> nums = {2, 7, 11, 15};\n    int target = 9;\n    vector<int> result = sol.twoSum(nums, target);\n    cout << \"[\" << result[0] << \",\" << result[1] << \"]\" << endl;\n    return 0;\n}",
     },
     visibleTestCases: [
       { input: "[2,7,11,15], 9", output: "[0,1]" },
@@ -46,6 +49,9 @@ export const PROBLEMS = [
     starterCode: {
       javascript: "function reverseString(s) {\n  // Write your solution here\n}",
       python: "def reverseString(s):\n    # Write your solution here\n    pass",
+      java: "import java.util.*;\n\npublic class Main {\n    public static void reverseString(char[] s) {\n        // Write your solution here\n    }\n\n    public static void main(String[] args) {\n        char[] s = {'h', 'e', 'l', 'l', 'o'};\n        reverseString(s);\n        System.out.println(Arrays.toString(s));\n    }\n}",
+      c: "#include <stdio.h>\n#include <string.h>\n\nvoid reverseString(char* s, int sSize) {\n    // Write your solution here\n}\n\nint main() {\n    char s[] = {'h', 'e', 'l', 'l', 'o'};\n    reverseString(s, 5);\n    printf(\"[\");\n    for(int i=0; i<5; i++) {\n        printf(\"\\\"%c\\\"%s\", s[i], i==4 ? \"\" : \",\");\n    }\n    printf(\"]\\n\");\n    return 0;\n}",
+      cpp: "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    void reverseString(vector<char>& s) {\n        // Write your solution here\n    }\n};\n\nint main() {\n    Solution sol;\n    vector<char> s = {'h', 'e', 'l', 'l', 'o'};\n    sol.reverseString(s);\n    cout << \"[\";\n    for(int i=0; i<s.size(); i++) {\n        cout << \"\\\"\" << s[i] << \"\\\"\" << (i==s.size()-1 ? \"\" : \",\");\n    }\n    cout << \"]\" << endl;\n    return 0;\n}",
     },
     visibleTestCases: [
       { input: '["h","e","l","l","o"]', output: '["o","l","l","e","h"]' },
@@ -73,6 +79,9 @@ export const PROBLEMS = [
     starterCode: {
       javascript: "function isValid(s) {\n  // Write your solution here\n}",
       python: "def isValid(s):\n    # Write your solution here\n    pass",
+      java: "import java.util.*;\n\npublic class Main {\n    public static boolean isValid(String s) {\n        // Write your solution here\n        return true;\n    }\n\n    public static void main(String[] args) {\n        String s = \"()\";\n        System.out.println(isValid(s));\n    }\n}",
+      c: "#include <stdio.h>\n#include <stdbool.h>\n\nbool isValid(char* s) {\n    // Write your solution here\n    return true;\n}\n\nint main() {\n    char* s = \"()\";\n    printf(\"%s\\n\", isValid(s) ? \"true\" : \"false\");\n    return 0;\n}",
+      cpp: "#include <iostream>\n#include <string>\n#include <stack>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isValid(string s) {\n        // Write your solution here\n        return true;\n    }\n};\n\nint main() {\n    Solution sol;\n    string s = \"()\";\n    cout << (sol.isValid(s) ? \"true\" : \"false\") << endl;\n    return 0;\n}",
     },
     visibleTestCases: [
       { input: '"()"', output: "true" },
@@ -101,6 +110,9 @@ export const PROBLEMS = [
     starterCode: {
       javascript: "function maxSubArray(nums) {\n  // Write your solution here\n}",
       python: "def maxSubArray(nums):\n    # Write your solution here\n    pass",
+      java: "public class Main {\n    public static int maxSubArray(int[] nums) {\n        // Write your solution here\n        return 0;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        System.out.println(maxSubArray(nums));\n    }\n}",
+      c: "#include <stdio.h>\n\nint maxSubArray(int* nums, int numsSize) {\n    // Write your solution here\n    return 0;\n}\n\nint main() {\n    int nums[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n    printf(\"%d\\n\", maxSubArray(nums, 9));\n    return 0;\n}",
+      cpp: "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        // Write your solution here\n        return 0;\n    }\n};\n\nint main() {\n    Solution sol;\n    vector<int> nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n    cout << sol.maxSubArray(nums) << endl;\n    return 0;\n}",
     },
     visibleTestCases: [
       { input: "[-2,1,-3,4,-1,2,1,-5,4]", output: "6" },
@@ -129,6 +141,9 @@ export const PROBLEMS = [
     starterCode: {
       javascript: "function maxArea(height) {\n  // Write your solution here\n}",
       python: "def maxArea(height):\n    # Write your solution here\n    pass",
+      java: "public class Main {\n    public static int maxArea(int[] height) {\n        // Write your solution here\n        return 0;\n    }\n\n    public static void main(String[] args) {\n        int[] height = {1, 8, 6, 2, 5, 4, 8, 3, 7};\n        System.out.println(maxArea(height));\n    }\n}",
+      c: "#include <stdio.h>\n\nint maxArea(int* height, int heightSize) {\n    // Write your solution here\n    return 0;\n}\n\nint main() {\n    int height[] = {1, 8, 6, 2, 5, 4, 8, 3, 7};\n    printf(\"%d\\n\", maxArea(height, 9));\n    return 0;\n}",
+      cpp: "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        // Write your solution here\n        return 0;\n    }\n};\n\nint main() {\n    Solution sol;\n    vector<int> height = {1, 8, 6, 2, 5, 4, 8, 3, 7};\n    cout << sol.maxArea(height) << endl;\n    return 0;\n}",
     },
     visibleTestCases: [
       { input: "[1,8,6,2,5,4,8,3,7]", output: "49" },

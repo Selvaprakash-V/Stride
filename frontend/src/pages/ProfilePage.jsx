@@ -2,9 +2,11 @@ import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import ContributionHeatmap from "../components/ContributionHeatmap";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { userApi } from "../api/users";
 import { problemApi } from "../api/problems";
+import { submissionApi } from "../api/submissions";
 
 function ProfilePage() {
   const { user: clerkUser } = useUser();
@@ -22,6 +24,11 @@ function ProfilePage() {
 
   const solvedProblems = solvedData?.solvedProblems || [];
   const solvedStats = solvedData?.stats || { total: 0, easy: 0, medium: 0, hard: 0 };
+
+  const { data: submissionActivity, isLoading: loadingActivity } = useQuery({
+    queryKey: ["submission-activity", "rolling-365"],
+    queryFn: () => submissionApi.getSubmissionActivity(),
+  });
 
   const [roleDraft, setRoleDraft] = useState(profile?.role || "participant");
   const [problemForm, setProblemForm] = useState({
@@ -217,6 +224,11 @@ function ProfilePage() {
                 )}
               </div>
             </div>
+
+            <ContributionHeatmap
+              activity={submissionActivity}
+              isLoading={loadingActivity}
+            />
 
             {/* HOST-ONLY: SYNC USERS & CREATE PROBLEM */}
             {profile.role === "host" && (

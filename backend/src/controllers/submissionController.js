@@ -209,3 +209,83 @@ export async function getSubmissionsByProblem(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+// GET /api/submissions/activity?year=2026
+export async function getSubmissionActivity(req, res) {
+  try {
+    const userId = req.user._id;
+    const currentYear = new Date().getUTCFullYear();
+    const parsedYear = Number.parseInt(req.query.year, 10);
+    const year = Number.isInteger(parsedYear) ? parsedYear : null;
+
+    let start;
+    let end;
+
+    if (year) {
+      start = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+      end = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0, 0));
+    } else {
+      // Default window: last 365 days ending today (UTC), no future range.
+      const today = new Date();
+      const endOfTodayExclusive = new Date(Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate() + 1,
+        0,
+        0,
+        0,
+        0
+      ));
+      start = new Date(endOfTodayExclusive);
+      start.setUTCDate(start.getUTCDate() - 365);
+      end = endOfTodayExclusive;
+    }
+
+    const [dailyCountsAgg, yearsAgg] = await Promise.all([
+      Submission.aggregate([
+        {
+          $match: {
+            userId,
+            submittedAt: { $gte: start, $lt: end },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: "%Y-%m-%d", date: "$submittedAt", timezone: "UTC" },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Submission.aggregate([
+        { $match: { userId } },
+        {
+          $group: {
+            _id: { $year: "$submittedAt" },
+          },
+        },
+        { $sort: { _id: -1 } },
+      ]),
+    ]);
+
+    const dailyCounts = dailyCountsAgg.map((row) => ({ date: row._id, count: row.count }));
+    const totalSubmissions = dailyCounts.reduce((sum, row) => sum + row.count, 0);
+
+    const years = yearsAgg.map((row) => row._id).filter((y) => Number.isInteger(y));
+    if (!years.includes(currentYear)) years.unshift(currentYear);
+
+    res.status(200).json({
+      year: year || currentYear,
+      totalSubmissions,
+      dailyCounts,
+      availableYears: [...new Set(years)].sort((a, b) => b - a),
+      rangeStart: start.toISOString().slice(0, 10),
+      rangeEnd: new Date(end.getTime() - 1).toISOString().slice(0, 10),
+    });
+  } catch (error) {
+    console.error("Error in getSubmissionActivity controller:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}

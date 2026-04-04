@@ -50,6 +50,14 @@ app.post("/api/execute", async (req, res) => {
   res.status(200).json(result);
 });
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    msg: "Stride backend is running",
+    health: "/health",
+    apiBase: "/api",
+  });
+});
+
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "api is up and running" });
 });

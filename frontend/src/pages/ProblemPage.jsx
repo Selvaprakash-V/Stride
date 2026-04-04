@@ -86,6 +86,25 @@ function ProblemPage() {
     return userCode;
   };
 
+  const normalizeOutput = (value) => {
+    if (!value) return "";
+    return String(value)
+      .trim()
+      .split("\n")
+      .map((line) =>
+        line
+          .trim()
+          .replace(/\[\s+/g, "[")
+          .replace(/\s+\]/g, "]")
+          .replace(/\s*,\s*/g, ",")
+          .replace(/\bTrue\b/g, "true")
+          .replace(/\bFalse\b/g, "false")
+          .replace(/\bNone\b/g, "null")
+      )
+      .filter((line) => line.length > 0)
+      .join("\n");
+  };
+
   const getStarterCode = (problem, lang) => {
     if (!problem?.starterCode) return "";
     // After JSON serialization, Mongoose Maps become plain objects
@@ -146,18 +165,36 @@ function ProblemPage() {
       const sampleInput =
         currentProblem?.visibleTestCases?.[0]?.input ||
         "";
+      const sampleExpected = currentProblem?.visibleTestCases?.[0]?.output || "";
       const codeToRun = buildRunCodeWithSampleInput(selectedLanguage, code, starter, sampleInput);
 
       const result = await executeCode(selectedLanguage, codeToRun);
-      setOutput(result);
-      if (result.success) {
-        if (result.output && result.output !== "No output") {
-          toast.success("Code executed successfully!");
+      const uiResult = { ...result };
+
+      if (!result.success) {
+        uiResult.status = "Runtime Error";
+      } else if (sampleExpected) {
+        const normalizedActual = normalizeOutput(result.output);
+        const normalizedExpected = normalizeOutput(sampleExpected);
+
+        if (normalizedActual === normalizedExpected) {
+          uiResult.status = "Accepted";
         } else {
-          toast("Code ran successfully, but produced no output.");
+          uiResult.status = "Wrong Output";
+          uiResult.output = `Expected: ${sampleExpected}\nReceived: ${result.output || "No output"}`;
         }
-      } else {
+      }
+
+      setOutput(uiResult);
+
+      if (uiResult.status === "Accepted") {
+        toast.success("Output matched expected result.");
+      } else if (uiResult.status === "Wrong Output") {
+        toast.error("Wrong output. Check expected vs received.");
+      } else if (!result.success) {
         toast.error("Execution failed. Check console.");
+      } else {
+        toast("Code executed.");
       }
     } catch (err) {
       toast.error("Failed to run code");

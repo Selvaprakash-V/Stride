@@ -41,8 +41,31 @@ function OutputPanel({ output, isRunning, isSubmitting }) {
     );
   }
 
-  const isAccepted = output.status === "Accepted" || (output.success && !output.error);
-  const isError = output.status === "Runtime Error" || output.error;
+  const isSubmissionResult = typeof output.status === "string" && output.status.length > 0;
+  const hasStdOutput = Boolean(output.output && output.output !== "No output");
+  const isAccepted = output.status === "Accepted";
+  const isExecutionSuccess = !isSubmissionResult && output.success && !output.error;
+  const isError =
+    (isSubmissionResult && output.status !== "Accepted") ||
+    (!isSubmissionResult && (!output.success || Boolean(output.error)));
+
+  const statusTitle = isSubmissionResult
+    ? output.status
+    : isExecutionSuccess
+      ? hasStdOutput
+        ? "Success"
+        : "No Output"
+      : "Error";
+
+  const statusDescription = isSubmissionResult
+    ? isAccepted
+      ? "Your solution passed all test cases"
+      : "Expected output did not match or execution failed"
+    : isExecutionSuccess
+      ? hasStdOutput
+        ? "Code executed successfully"
+        : "Code executed successfully but produced no output"
+      : "Execution failed. Check logs for details";
 
   return (
     <div className="h-full flex flex-col bg-[#161b22] overflow-hidden">
@@ -74,20 +97,20 @@ function OutputPanel({ output, isRunning, isSubmitting }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={`p-4 rounded-2xl flex items-center gap-4 border transition-all ${isAccepted
+          className={`p-4 rounded-2xl flex items-center gap-4 border transition-all ${(isAccepted || isExecutionSuccess)
               ? "bg-easy-light border-easy/20 shadow-[0_0_20px_rgba(0,184,163,0.1)]"
               : "bg-hard-light border-hard/20 shadow-[0_0_20px_rgba(239,71,67,0.1)]"
             }`}
         >
-          <div className={`p-2 rounded-xl bg-white/10 ${isAccepted ? "text-easy" : "text-hard"}`}>
-            {isAccepted ? <ShieldCheck className="size-6" /> : <ShieldAlert className="size-6" />}
+          <div className={`p-2 rounded-xl bg-white/10 ${(isAccepted || isExecutionSuccess) ? "text-easy" : "text-hard"}`}>
+            {(isAccepted || isExecutionSuccess) ? <ShieldCheck className="size-6" /> : <ShieldAlert className="size-6" />}
           </div>
           <div>
-            <h4 className={`text-lg font-black ${isAccepted ? "text-easy" : "text-hard"}`}>
-              {output.status || (isAccepted ? "Success" : "Error")}
+            <h4 className={`text-lg font-black ${(isAccepted || isExecutionSuccess) ? "text-easy" : "text-hard"}`}>
+              {statusTitle}
             </h4>
             <p className="text-xs font-medium text-white/40">
-              {isAccepted ? "Your solution passed all test cases" : "Check logs for more details"}
+              {statusDescription}
             </p>
           </div>
         </motion.div>

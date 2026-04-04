@@ -90,6 +90,18 @@ function buildTestHarness(language, userCode, starterCode, testCases) {
   };
 }
 
+function classifyExecutionFailure(errorMessage = "") {
+  const err = String(errorMessage).toLowerCase();
+
+  if (err.includes("time limit")) return "Time Limit Exceeded";
+  if (err.includes("memory limit")) return "Memory Limit Exceeded";
+  if (err.includes("compile") || err.includes("compilation") || err.includes("syntaxerror") || err.includes("syntax error")) {
+    return "Compilation Error";
+  }
+
+  return "Runtime Error";
+}
+
 /**
  * POST /api/submissions
  */
@@ -128,7 +140,7 @@ export async function submitSolution(req, res) {
     let outputToShow = result.output;
 
     if (!result.success) {
-      status = result.error?.includes("Time Limit") ? "Time Limit Exceeded" : "Runtime Error";
+      status = classifyExecutionFailure(result.error);
     } else if (expected) {
       const normalizedActual = normalizeOutput(result.output);
       if (normalizedActual !== expected) {

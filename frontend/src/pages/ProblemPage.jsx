@@ -33,6 +33,59 @@ function ProblemPage() {
   const allProblems = data?.problems || [];
   const currentProblem = problemDetail?.problem || allProblems.find((p) => p.slug === id || p.id === id);
 
+  const extractFunctionName = (language, starterCode) => {
+    if (!starterCode) return null;
+    if (language === "javascript") {
+      const m = starterCode.match(/^function\s+(\w+)/m);
+      return m?.[1] || null;
+    }
+    if (language === "python") {
+      const m = starterCode.match(/^def\s+(\w+)/m);
+      return m?.[1] || null;
+    }
+    return null;
+  };
+
+  const buildRunCodeWithSampleInput = (language, userCode, starterCode, sampleInput) => {
+    if (!sampleInput) return userCode;
+
+    const fnName = extractFunctionName(language, starterCode);
+    if (!fnName) return userCode;
+
+    if (language === "javascript") {
+      const harness = [
+        "try {",
+        `  const __args = [${sampleInput}];`,
+        `  const __r = ${fnName}(...__args);`,
+        "  if (Array.isArray(__r) || (typeof __r === 'object' && __r !== null)) console.log(JSON.stringify(__r));",
+        "  else if (typeof __r === 'boolean') console.log(String(__r));",
+        "  else if (__r !== undefined) console.log(String(__r));",
+        "} catch (__e) {",
+        "  process.stderr.write(String(__e.message || __e) + '\\n');",
+        "}",
+      ].join("\n");
+      return `${userCode}\n${harness}`;
+    }
+
+    if (language === "python") {
+      const safeInput = JSON.stringify(sampleInput);
+      const harness = [
+        "try:",
+        `  __args = eval('[' + ${safeInput} + ']')`,
+        `  __r = ${fnName}(*__args)`,
+        "  import json as __j",
+        "  if isinstance(__r, bool): print(str(__r).lower())",
+        "  elif isinstance(__r, (list, dict)): print(__j.dumps(__r))",
+        "  elif __r is not None: print(__r)",
+        "except Exception as __e:",
+        "  import sys; print(str(__e), file=sys.stderr)",
+      ].join("\n");
+      return `${userCode}\n${harness}`;
+    }
+
+    return userCode;
+  };
+
   const getStarterCode = (problem, lang) => {
     if (!problem?.starterCode) return "";
     // After JSON serialization, Mongoose Maps become plain objects
@@ -89,10 +142,20 @@ function ProblemPage() {
     setIsRunning(true);
     setOutput(null);
     try {
-      const result = await executeCode(selectedLanguage, code);
+      const starter = getStarterCode(currentProblem, selectedLanguage);
+      const sampleInput =
+        currentProblem?.visibleTestCases?.[0]?.input ||
+        "";
+      const codeToRun = buildRunCodeWithSampleInput(selectedLanguage, code, starter, sampleInput);
+
+      const result = await executeCode(selectedLanguage, codeToRun);
       setOutput(result);
       if (result.success) {
-        toast.success("Code executed successfully!");
+        if (result.output && result.output !== "No output") {
+          toast.success("Code executed successfully!");
+        } else {
+          toast("Code ran successfully, but produced no output.");
+        }
       } else {
         toast.error("Execution failed. Check console.");
       }

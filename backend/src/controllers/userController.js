@@ -1,19 +1,21 @@
 import Session from "../models/Session.js";
 import User from "../models/User.js";
-import { ENV } from "../lib/env.js";
 import SolvedProblem from "../models/SolvedProblem.js";
 import Submission from "../models/Submission.js";
+import { applyClerkData } from "../middleware/protectRoute.js";
+import { ENV } from "../lib/env.js";
 
-// Helper to find or create a User record for authenticated identities
-export async function createOrFetchUser({ clerkId, name, email, profileImage }) {
-  let user = await User.findOne({ clerkId });
-  if (!user) {
-    user = new User({ clerkId, name, email, profileImage });
-    await user.save();
-    return user;
-  }
-  return user;
-}
+const formatUser = (user) => ({
+  id: user._id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  name: user.name,
+  email: user.email,
+  profileImage: user.profileImage,
+  clerkId: user.clerkId,
+  role: user.role,
+  createdAt: user.createdAt,
+});
 
 export async function searchUsers(req, res) {
   try {
@@ -58,17 +60,7 @@ export async function getMe(req, res) {
       ]);
 
     res.status(200).json({
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        name: user.name,
-        email: user.email,
-        profileImage: user.profileImage,
-        clerkId: user.clerkId,
-        role: user.role,
-        createdAt: user.createdAt,
-      },
+      user: formatUser(user),
       stats: {
         hostedSessions: hostedCount,
         participatedSessions: participantCount,
@@ -98,19 +90,7 @@ export async function updateMe(req, res) {
     // Only allow other updatable fields here in the future (e.g., subscription updates)
     await user.save();
 
-    res.status(200).json({
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        name: user.name,
-        email: user.email,
-        profileImage: user.profileImage,
-        clerkId: user.clerkId,
-        role: user.role,
-        createdAt: user.createdAt,
-      },
-    });
+    res.status(200).json({ user: formatUser(user) });
   } catch (error) {
     console.error("Error in updateMe controller:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -284,69 +264,32 @@ export async function getUserStats(req, res) {
   }
 }
 
-// Sync all users from Clerk to update their names and emails
 export async function syncAllUsersFromClerk(req, res) {
   try {
-    if (!ENV.CLERK_SECRET_KEY) {
-      return res.status(500).json({ message: "Clerk secret key not configured" });
-    }
+    if (!ENV.CLERK_SECRET_KEY) return res.status(500).json({ message: "Clerk secret key not configured" });
 
-    // Get all users from MongoDB
     const dbUsers = await User.find({});
-    
     let updatedCount = 0;
-    let errors = [];
+    const errors = [];
 
     for (const dbUser of dbUsers) {
       try {
-        // Fetch user data from Clerk API
-        const clerkResponse = await fetch(`https://api.clerk.com/v1/users/${dbUser.clerkId}`, {
-          headers: {
-            Authorization: `Bearer ${ENV.CLERK_SECRET_KEY}`,
-          },
+        const clerkRes = await fetch(`https://api.clerk.com/v1/users/${dbUser.clerkId}`, {
+          headers: { Authorization: `Bearer ${ENV.CLERK_SECRET_KEY}` },
         });
+        if (!clerkRes.ok) { errors.push(`Failed to fetch Clerk user ${dbUser.clerkId}`); continue; }
 
-        if (!clerkResponse.ok) {
-          errors.push(`Failed to fetch Clerk user ${dbUser.clerkId}`);
-          continue;
-        }
-
-        const clerkUser = await clerkResponse.json();
-
-        // Update user with Clerk data
-        const firstName = clerkUser.first_name || "";
-        const lastName = clerkUser.last_name || "";
-        const fullName = [firstName, lastName].filter(Boolean).join(" ");
-        const email = clerkUser.email_addresses?.[0]?.email_address || dbUser.email;
-        const profileImage = clerkUser.image_url || "";
-
-        let needsUpdate = false;
-
-        if (firstName && dbUser.firstName !== firstName) {
-          dbUser.firstName = firstName;
-          needsUpdate = true;
-        }
-        if (lastName !== undefined && dbUser.lastName !== lastName) {
-          dbUser.lastName = lastName;
-          needsUpdate = true;
-        }
-        if (fullName && dbUser.name !== fullName) {
-          dbUser.name = fullName;
-          needsUpdate = true;
-        }
-        if (email && dbUser.email !== email && !email.includes("@example.com")) {
-          dbUser.email = email;
-          needsUpdate = true;
-        }
-        if (profileImage && dbUser.profileImage !== profileImage) {
-          dbUser.profileImage = profileImage;
-          needsUpdate = true;
-        }
-
-        if (needsUpdate) {
-          await dbUser.save();
-          updatedCount++;
-        }
+        const c = await clerkRes.json();
+        const firstName = c.first_name || "";
+        const lastName = c.last_name || "";
+        const changed = applyClerkData(dbUser, {
+          firstName,
+          lastName,
+          fullName: [firstName, lastName].filter(Boolean).join(" "),
+          email: c.email_addresses?.[0]?.email_address || dbUser.email,
+          profileImage: c.image_url || "",
+        });
+        if (changed) { await dbUser.save(); updatedCount++; }
       } catch (err) {
         errors.push(`Error updating user ${dbUser.clerkId}: ${err.message}`);
       }
@@ -356,7 +299,7 @@ export async function syncAllUsersFromClerk(req, res) {
       message: `Synced ${updatedCount} users from Clerk`,
       totalUsers: dbUsers.length,
       updatedCount,
-      errors: errors.length > 0 ? errors : undefined,
+      ...(errors.length && { errors }),
     });
   } catch (error) {
     console.error("Error in syncAllUsersFromClerk:", error);

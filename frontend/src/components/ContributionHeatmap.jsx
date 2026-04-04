@@ -82,7 +82,9 @@ function buildRollingGrid(activity) {
     label: new Date(Date.UTC(start.getUTCFullYear(), month, 1)).toLocaleString("default", { month: "short" }),
   }));
 
-  return { columns: cells, monthLabels, start, end };
+  const monthLabelByIndex = new Map(monthLabels.map((m) => [m.idx, m.label]));
+
+  return { columns: cells, monthLabelByIndex };
 }
 
 function formatDayTitle(cell) {
@@ -96,7 +98,7 @@ function formatDayTitle(cell) {
 }
 
 function ContributionHeatmap({ activity, isLoading }) {
-  const { columns, monthLabels } = buildRollingGrid(activity);
+  const { columns, monthLabelByIndex } = buildRollingGrid(activity);
   const total = activity?.totalSubmissions || 0;
 
   return (
@@ -117,10 +119,9 @@ function ContributionHeatmap({ activity, isLoading }) {
                   style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
                 >
                   {Array.from({ length: columns.length }).map((_, idx) => {
-                    const month = monthLabels.find((m) => m.idx === idx);
                     return (
                       <span key={`month-${idx}`} className="h-4 leading-4">
-                        {month ? month.label : ""}
+                        {monthLabelByIndex.get(idx) || ""}
                       </span>
                     );
                   })}

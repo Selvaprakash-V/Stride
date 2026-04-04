@@ -8,13 +8,89 @@ const CodeEditorPanel = React.lazy(() => import("../components/CodeEditorPanel")
 
 import { executeCode } from "../lib/piston";
 import { useProblems, useProblemById } from "../hooks/useProblems";
-import { problemApi } from "../api/problems";
 import { submissionApi } from "../api/submissions";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
-import { motion, AnimatePresence } from "framer-motion";
+
+function extractFunctionName(language, starterCode) {
+  if (!starterCode) return null;
+  if (language === "javascript") {
+    const m = starterCode.match(/^function\s+(\w+)/m);
+    return m?.[1] || null;
+  }
+  if (language === "python") {
+    const m = starterCode.match(/^def\s+(\w+)/m);
+    return m?.[1] || null;
+  }
+  return null;
+}
+
+function buildRunCodeWithSampleInput(language, userCode, starterCode, sampleInput) {
+  if (!sampleInput) return userCode;
+
+  const fnName = extractFunctionName(language, starterCode);
+  if (!fnName) return userCode;
+
+  if (language === "javascript") {
+    const harness = [
+      "try {",
+      `  const __args = [${sampleInput}];`,
+      `  const __r = ${fnName}(...__args);`,
+      "  if (Array.isArray(__r) || (typeof __r === 'object' && __r !== null)) console.log(JSON.stringify(__r));",
+      "  else if (typeof __r === 'boolean') console.log(String(__r));",
+      "  else if (__r !== undefined) console.log(String(__r));",
+      "} catch (__e) {",
+      "  process.stderr.write(String(__e.message || __e) + '\\n');",
+      "}",
+    ].join("\n");
+    return `${userCode}\n${harness}`;
+  }
+
+  if (language === "python") {
+    const safeInput = JSON.stringify(sampleInput);
+    const harness = [
+      "try:",
+      `  __args = eval('[' + ${safeInput} + ']')`,
+      `  __r = ${fnName}(*__args)`,
+      "  import json as __j",
+      "  if isinstance(__r, bool): print(str(__r).lower())",
+      "  elif isinstance(__r, (list, dict)): print(__j.dumps(__r))",
+      "  elif __r is not None: print(__r)",
+      "except Exception as __e:",
+      "  import sys; print(str(__e), file=sys.stderr)",
+    ].join("\n");
+    return `${userCode}\n${harness}`;
+  }
+
+  return userCode;
+}
+
+function normalizeOutput(value) {
+  if (!value) return "";
+  return String(value)
+    .trim()
+    .split("\n")
+    .map((line) =>
+      line
+        .trim()
+        .replace(/\[\s+/g, "[")
+        .replace(/\s+\]/g, "]")
+        .replace(/\s*,\s*/g, ",")
+        .replace(/\bTrue\b/g, "true")
+        .replace(/\bFalse\b/g, "false")
+        .replace(/\bNone\b/g, "null")
+    )
+    .filter((line) => line.length > 0)
+    .join("\n");
+}
+
+function getStarterCode(problem, lang) {
+  if (!problem?.starterCode) return "";
+  if (typeof problem.starterCode.get === "function") return problem.starterCode.get(lang) || "";
+  return problem.starterCode[lang] || "";
+}
 
 function ProblemPage() {
   const { id } = useParams();
@@ -32,85 +108,6 @@ function ProblemPage() {
   const { data: problemDetail, isLoading: isLoadingDetail } = useProblemById(id);
   const allProblems = data?.problems || [];
   const currentProblem = problemDetail?.problem || allProblems.find((p) => p.slug === id || p.id === id);
-
-  const extractFunctionName = (language, starterCode) => {
-    if (!starterCode) return null;
-    if (language === "javascript") {
-      const m = starterCode.match(/^function\s+(\w+)/m);
-      return m?.[1] || null;
-    }
-    if (language === "python") {
-      const m = starterCode.match(/^def\s+(\w+)/m);
-      return m?.[1] || null;
-    }
-    return null;
-  };
-
-  const buildRunCodeWithSampleInput = (language, userCode, starterCode, sampleInput) => {
-    if (!sampleInput) return userCode;
-
-    const fnName = extractFunctionName(language, starterCode);
-    if (!fnName) return userCode;
-
-    if (language === "javascript") {
-      const harness = [
-        "try {",
-        `  const __args = [${sampleInput}];`,
-        `  const __r = ${fnName}(...__args);`,
-        "  if (Array.isArray(__r) || (typeof __r === 'object' && __r !== null)) console.log(JSON.stringify(__r));",
-        "  else if (typeof __r === 'boolean') console.log(String(__r));",
-        "  else if (__r !== undefined) console.log(String(__r));",
-        "} catch (__e) {",
-        "  process.stderr.write(String(__e.message || __e) + '\\n');",
-        "}",
-      ].join("\n");
-      return `${userCode}\n${harness}`;
-    }
-
-    if (language === "python") {
-      const safeInput = JSON.stringify(sampleInput);
-      const harness = [
-        "try:",
-        `  __args = eval('[' + ${safeInput} + ']')`,
-        `  __r = ${fnName}(*__args)`,
-        "  import json as __j",
-        "  if isinstance(__r, bool): print(str(__r).lower())",
-        "  elif isinstance(__r, (list, dict)): print(__j.dumps(__r))",
-        "  elif __r is not None: print(__r)",
-        "except Exception as __e:",
-        "  import sys; print(str(__e), file=sys.stderr)",
-      ].join("\n");
-      return `${userCode}\n${harness}`;
-    }
-
-    return userCode;
-  };
-
-  const normalizeOutput = (value) => {
-    if (!value) return "";
-    return String(value)
-      .trim()
-      .split("\n")
-      .map((line) =>
-        line
-          .trim()
-          .replace(/\[\s+/g, "[")
-          .replace(/\s+\]/g, "]")
-          .replace(/\s*,\s*/g, ",")
-          .replace(/\bTrue\b/g, "true")
-          .replace(/\bFalse\b/g, "false")
-          .replace(/\bNone\b/g, "null")
-      )
-      .filter((line) => line.length > 0)
-      .join("\n");
-  };
-
-  const getStarterCode = (problem, lang) => {
-    if (!problem?.starterCode) return "";
-    // After JSON serialization, Mongoose Maps become plain objects
-    if (typeof problem.starterCode.get === "function") return problem.starterCode.get(lang) || "";
-    return problem.starterCode[lang] || "";
-  };
 
   // update problem when URL param changes or data loads
   useEffect(() => {
@@ -162,9 +159,7 @@ function ProblemPage() {
     setOutput(null);
     try {
       const starter = getStarterCode(currentProblem, selectedLanguage);
-      const sampleInput =
-        currentProblem?.visibleTestCases?.[0]?.input ||
-        "";
+      const sampleInput = currentProblem?.visibleTestCases?.[0]?.input || "";
       const sampleExpected = currentProblem?.visibleTestCases?.[0]?.output || "";
       const codeToRun = buildRunCodeWithSampleInput(selectedLanguage, code, starter, sampleInput);
 

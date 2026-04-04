@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import ContributionHeatmap from "../components/ContributionHeatmap";
@@ -8,9 +8,46 @@ import { userApi } from "../api/users";
 import { problemApi } from "../api/problems";
 import { submissionApi } from "../api/submissions";
 
+const INITIAL_PROBLEM_FORM = {
+  id: "",
+  title: "",
+  difficulty: "Easy",
+  category: "General",
+  descriptionText: "",
+  starterCodeJs: "",
+  expectedOutputJs: "",
+};
+
+const DEFAULT_SOLVED_STATS = { total: 0, easy: 0, medium: 0, hard: 0 };
+
+function getDifficultyBadgeClass(difficulty) {
+  const level = String(difficulty).toLowerCase();
+  if (level === "easy") return "badge-success";
+  if (level === "medium") return "badge-warning";
+  return "badge-error";
+}
+
+function buildProblemPayload(form) {
+  return {
+    id: form.id.trim(),
+    title: form.title.trim(),
+    difficulty: form.difficulty,
+    category: form.category.trim(),
+    descriptionText: form.descriptionText.trim(),
+    notes: [],
+    examples: [],
+    constraints: [],
+    starterCode: {
+      javascript: form.starterCodeJs,
+    },
+    expectedOutput: {
+      javascript: form.expectedOutputJs,
+    },
+  };
+}
+
 function ProfilePage() {
   const { user: clerkUser } = useUser();
-  const queryClient = useQueryClient();
   const { data, isLoading } = useUserProfile();
 
   const profile = data?.user;
@@ -23,30 +60,14 @@ function ProfilePage() {
   });
 
   const solvedProblems = solvedData?.solvedProblems || [];
-  const solvedStats = solvedData?.stats || { total: 0, easy: 0, medium: 0, hard: 0 };
+  const solvedStats = solvedData?.stats || DEFAULT_SOLVED_STATS;
 
   const { data: submissionActivity, isLoading: loadingActivity } = useQuery({
     queryKey: ["submission-activity", "rolling-365"],
     queryFn: () => submissionApi.getSubmissionActivity(),
   });
 
-  const [roleDraft, setRoleDraft] = useState(profile?.role || "participant");
-  const [problemForm, setProblemForm] = useState({
-    id: "",
-    title: "",
-    difficulty: "Easy",
-    category: "General",
-    descriptionText: "",
-    starterCodeJs: "",
-    expectedOutputJs: "",
-  });
-
-  const updateRoleMutation = useMutation({
-    mutationFn: (newRole) => userApi.updateMe({ role: newRole }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-    },
-  });
+  const [problemForm, setProblemForm] = useState(INITIAL_PROBLEM_FORM);
 
   const createProblemMutation = useMutation({
     mutationFn: (payload) => problemApi.createProblem(payload),
@@ -198,11 +219,7 @@ function ProfilePage() {
                             <td>
                               <span
                                 className={`badge badge-sm ${
-                                  sp.difficulty.toLowerCase() === "easy"
-                                    ? "badge-success"
-                                    : sp.difficulty.toLowerCase() === "medium"
-                                    ? "badge-warning"
-                                    : "badge-error"
+                                  getDifficultyBadgeClass(sp.difficulty)
                                 }`}
                               >
                                 {sp.difficulty}
@@ -366,33 +383,10 @@ function ProfilePage() {
                       className="btn btn-primary"
                       disabled={createProblemMutation.isPending}
                       onClick={() => {
-                        const payload = {
-                          id: problemForm.id.trim(),
-                          title: problemForm.title.trim(),
-                          difficulty: problemForm.difficulty,
-                          category: problemForm.category.trim(),
-                          descriptionText: problemForm.descriptionText.trim(),
-                          notes: [],
-                          examples: [],
-                          constraints: [],
-                          starterCode: {
-                            javascript: problemForm.starterCodeJs,
-                          },
-                          expectedOutput: {
-                            javascript: problemForm.expectedOutputJs,
-                          },
-                        };
+                        const payload = buildProblemPayload(problemForm);
                         createProblemMutation.mutate(payload, {
                           onSuccess: () => {
-                            setProblemForm({
-                              id: "",
-                              title: "",
-                              difficulty: "Easy",
-                              category: "General",
-                              descriptionText: "",
-                              starterCodeJs: "",
-                              expectedOutputJs: "",
-                            });
+                            setProblemForm(INITIAL_PROBLEM_FORM);
                           },
                         });
                       }}

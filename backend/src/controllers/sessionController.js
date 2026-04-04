@@ -185,23 +185,3 @@ export async function endSession(req, res) {
   }
 }
 
-// Compute and persist simple scoring for a completed session
-export async function scoreSession(req, res) {
-  try {
-    const { id } = req.params;
-    const session = await Session.findById(id);
-    if (!session) return res.status(404).json({ message: "Session not found" });
-
-    // Very small business rule: host gets 10 points, participant gets 5 points per solved problem
-    const solvedCount = 0; // Placeholder: would count solved problems referenced to session
-
-    session.hostScore = (session.hostScore || 0) + 10 + solvedCount * 5;
-    session.participantScore = (session.participantScore || 0) + solvedCount * 5;
-    await session.save();
-
-    res.status(200).json({ session, message: "Session scored" });
-  } catch (error) {
-    console.log("Error in scoreSession controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-}

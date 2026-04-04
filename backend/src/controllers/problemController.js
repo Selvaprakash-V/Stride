@@ -32,18 +32,6 @@ export async function getProblems(req, res) {
   }
 }
 
-// GET /problems/:slug
-export async function getProblemBySlug(req, res) {
-  try {
-    const { slug } = req.params;
-    const problem = await Problem.findOne({ slug }).select("-__v -hiddenTestCases");
-    if (!problem) return res.status(404).json({ message: "Problem not found" });
-    res.status(200).json({ problem });
-  } catch (error) {
-    console.error("Error in getProblemBySlug controller:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-}
 // GET /problems/:id (id or slug)
 export async function getProblemById(req, res) {
   try {

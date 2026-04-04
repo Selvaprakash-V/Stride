@@ -102,6 +102,12 @@ function classifyExecutionFailure(errorMessage = "") {
   return "Runtime Error";
 }
 
+function computeSubmissionStatus(result, expected) {
+  if (!result.success) return classifyExecutionFailure(result.error);
+  if (!expected) return "Accepted";
+  return normalizeOutput(result.output) === expected ? "Accepted" : "Wrong Answer";
+}
+
 /**
  * POST /api/submissions
  */
@@ -120,11 +126,11 @@ export async function submitSolution(req, res) {
     }
 
     // All test cases (visible + hidden)
-    const testCases = [...(problem.visibleTestCases || []), ...(problem.hiddenTestCases || [])];
-
-    // For compiled languages only test against visible[0] (main() already handles it)
+    const visibleTestCases = problem.visibleTestCases || [];
+    const hiddenTestCases = problem.hiddenTestCases || [];
+    const testCases = [...visibleTestCases, ...hiddenTestCases];
     const isCompiled = ["java", "c", "cpp"].includes(language);
-    const casesToTest = isCompiled ? (problem.visibleTestCases?.slice(0, 1) || []) : testCases;
+    const casesToTest = isCompiled ? visibleTestCases.slice(0, 1) : testCases;
 
     // Get starter code from the Mongoose Map
     const starterCode =
@@ -135,18 +141,7 @@ export async function submitSolution(req, res) {
     const { codeToRun, expected } = buildTestHarness(language, code, starterCode, casesToTest);
 
     const result = await executeCode(language, codeToRun);
-
-    let status = "Accepted";
-    let outputToShow = result.output;
-
-    if (!result.success) {
-      status = classifyExecutionFailure(result.error);
-    } else if (expected) {
-      const normalizedActual = normalizeOutput(result.output);
-      if (normalizedActual !== expected) {
-        status = "Wrong Answer";
-      }
-    }
+    const status = computeSubmissionStatus(result, expected);
 
     const submission = await Submission.create({
       userId,
@@ -166,22 +161,26 @@ export async function submitSolution(req, res) {
     );
 
     // Update Problem Stats
-    await Problem.findByIdAndUpdate(
+    const updatedProblem = await Problem.findByIdAndUpdate(
       problemId,
       { $inc: { totalSubmissions: 1, solvedCount: status === "Accepted" ? 1 : 0 } },
       { runValidators: false, new: true }
-    ).then(async (updated) => {
-      if (updated?.totalSubmissions > 0) {
-        const rate = (updated.solvedCount / updated.totalSubmissions) * 100;
-        await Problem.findByIdAndUpdate(problemId, { $set: { acceptanceRate: rate } }, { runValidators: false });
-      }
-    });
+    );
+
+    if (updatedProblem?.totalSubmissions > 0) {
+      const acceptanceRate = (updatedProblem.solvedCount / updatedProblem.totalSubmissions) * 100;
+      await Problem.findByIdAndUpdate(
+        problemId,
+        { $set: { acceptanceRate } },
+        { runValidators: false }
+      );
+    }
 
     res.status(201).json({
       submission,
       result: {
         status,
-        output: outputToShow,
+        output: result.output,
         error: result.error,
         runtime: result.runtime,
         memory: result.memory,
@@ -218,27 +217,15 @@ export async function getSubmissionActivity(req, res) {
     const parsedYear = Number.parseInt(req.query.year, 10);
     const year = Number.isInteger(parsedYear) ? parsedYear : null;
 
-    let start;
-    let end;
-
+    let start, end;
     if (year) {
-      start = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
-      end = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0, 0));
+      start = new Date(Date.UTC(year, 0, 1));
+      end = new Date(Date.UTC(year + 1, 0, 1));
     } else {
-      // Default window: last 365 days ending today (UTC), no future range.
       const today = new Date();
-      const endOfTodayExclusive = new Date(Date.UTC(
-        today.getUTCFullYear(),
-        today.getUTCMonth(),
-        today.getUTCDate() + 1,
-        0,
-        0,
-        0,
-        0
-      ));
-      start = new Date(endOfTodayExclusive);
+      end = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 1));
+      start = new Date(end);
       start.setUTCDate(start.getUTCDate() - 365);
-      end = endOfTodayExclusive;
     }
 
     const [dailyCountsAgg, yearsAgg] = await Promise.all([
